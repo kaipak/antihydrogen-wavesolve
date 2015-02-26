@@ -2,7 +2,9 @@ from IPython.display import display
 import numpy as np
 import scipy.misc as sc
 from sympy import *
+import itertools
 import ws_maths
+
 
 
 A = Symbol('A')
@@ -14,7 +16,16 @@ n = Symbol('n')
 r1 = Symbol('r1')
 r2 = Symbol('r2')
 r12 = Symbol('r12')
+
+# Hylleras coordinate stuff (transform later?)
+s = r1 + r2
+t = r1 - r2
+u = r12
+
 Z = Symbol('Z')
+
+# Constants
+LMN_LENGTH = 3
     
 def hfs_gamma(l, m, n):
     """
@@ -48,52 +59,51 @@ def hfs_gamma(l, m, n):
     
     return big_gamma
     
-def gen_wave_func(terms):
+def gen_wavefunction(l, m, n):
     """
     Generate wave function with arbitrary number of terms.  Need to later convert
     to Hylleraas coordinate system.  
     
     """
-    
-    
-    exponential = -((a * r1) + (b * r2) + (g * r12))/2 
+    exponential = -((a * r1) + (b * r2) + (g * r12)) 
     psi = exp(exponential)
-    wave_array = []
-    
-    
-    # Next set of loops is to Generate P in power series (eq. 32.15) according 
-    # to Bethe and Saltpeter paper "Quantum Mechanics of One and Two Electron
-    # Atoms" 1957
-    
-    # Generate coefficients depending on desired number of terms
-    coef={}
-    
-    for i in range(0, terms):
-        coef[i] = Symbol('c' + str(i)) # + ',' + str(2*i) + ',' + str(i))
-        wave_array.append(coef[i] * (r1 + r2)**i * psi) # (r1 - r2)**(2*i) * r12**i * psi)
-        #series_P += coef[i] * (r1 + r2)**i * (r1 - r2)**(2*i) * r12**i
-        
+    # Generate coefficients
+    coef = Symbol('c' + str(l) + str(m) + str(n))
+    wave_equation = coef * (s)**l * (t)**(2*m) * (u)**n * psi
+    return wave_equation
+
+def make_waves(iterables):
     """
-    for i in range(0, terms):
-        coef[i] = Symbol('c' + str(i))
-        wave_array.append(coef[i] * (r1 + r2)**i * psi)
+    Make a bunch of wave functions over Cartesian product from 0 to iterables over length of LMN (3).  
+    Somewhat of a binary counting system that increments l, m, n.
+    
+    Note on iterables variable.  To make it more clear to user, up to what cardinal number he/she
+    is using. 1, up to '1', 2, up to '2' and so on.  Otherwise, it 2 would be 0 and 1, and that gets
+    confusing.
+    
+    Produces (iterables + 1)^3 permutations of wave functions
+    
+    """
+    iterables += 2
+    my_list = []
+    lower_bound = 0
+    for i in xrange(0, iterables):
+        for j in list(itertools.product(range(0,i), repeat = LMN_LENGTH)):
+            if j not in my_list:
+                my_list.append((j))
         
-        #series_P += coef[i] * (r1 + r2)**i
-   """             
-    # psi = psi * series_P
-    # print diff(psi, r12)
+    for tup in my_list:
+        l,m,n = tup
+        display(gen_wavefunction(l,m,n))
     
-    #print str(psi).replace("**","^")
-    
-    return wave_array
-    # return psi
+    print len(my_list)    
     
 def hamiltonian_r(wfunc):
     """
     Solve Hamiltonian of wave function in r1, r2, r12 coordinate system
     
     """
-    hamiltonian = Mul(0)
+    # hamiltonian = Mul(0)
     hamiltonian = (-diff(wfunc, r1,2)/2 - diff(wfunc, r2, 2)/2 - diff(wfunc, r12, 2) - \
                   ((1/r1) * diff(wfunc, r1, 1)) - \
                   ((1/r2) * diff(wfunc, r2, 1)) - \
@@ -102,16 +112,8 @@ def hamiltonian_r(wfunc):
                   (((r2**2 - r1**2 + r12**2)/(r2 * r12)) * diff(diff(wfunc, r12,1),r2,1)) - \
                   ((Z/r1) + (Z/r2) - (1/r12)) * wfunc) * \
                   (r1 * r2 * r12)
-                  
-    hamiltonian = hamiltonian/wfunc
-    
-    """    
-    print hamiltonian
-    display(hamiltonian.simplify())
-    display(hamiltonian.expand())
-    display(hamiltonian.factor())   
-    """
-    return hamiltonian.expand()
+            
+    return hamiltonian
     
     
     
