@@ -2,15 +2,16 @@ from IPython.display import display
 import numpy as np
 import scipy.misc as sc
 from sympy import *
+from re import *
 import itertools
 import ws_maths
 
 
 
 A = Symbol('A')
-a = Symbol('alpha')
-b = Symbol('beta')
-g = Symbol('gamma')
+a = .70120
+b = .70120
+g = 0
 m = Symbol('m')
 n = Symbol('n')
 r1 = Symbol('r1')
@@ -25,6 +26,9 @@ u = r12
 Z = Symbol('Z')
 
 # Constants
+EXPONENTIAL = -((a * r1) + (b * r2) + (g * r12))
+# Base wave equation we'll build on
+PSI = exp(EXPONENTIAL)
 LMN_LENGTH = 3
     
 def hfs_gamma(l, m, n):
@@ -37,9 +41,9 @@ def hfs_gamma(l, m, n):
     fact_coef = 2 * np.math.factorial(l) * np.math.factorial(m) \
                 * np.math.factorial(n)
         
-    x = a + b
-    y = a + g
-    z = b + g
+    x = 2*a + 2*b
+    y = 2*a + 2*g
+    z = 2*b + 2*g
         
     big_gamma = Mul(0)
     
@@ -53,11 +57,69 @@ def hfs_gamma(l, m, n):
     
     big_gamma = fact_coef*big_gamma
     
-    print str(big_gamma.simplify()).replace("**","^")
-    print '\n'
-    print str(big_gamma).replace("**","^")
+    #print str(big_gamma.simplify()).replace("**","^")
+    #print '\n'
+    #print str(big_gamma).replace("**","^")
+    #display(big_gamma * 8 * pi**2)
     
-    return big_gamma
+    print big_gamma * 8 * 3.1419**2
+
+def gamma_transform(psi_array):
+    """
+    Take list/array of wave functions and generate values to be used in Harris, Frolov, and Smith
+    Equation.
+    
+    <Psy_i|Psy_j> = integral(Psy_i*Psy_j*r1*r2*r12dr1dr2dr12).  Pull out powers ot r1, r2, r12 from resultant
+    polynomial to generate lmn numbers and gather coefficients.
+    
+    """
+    i = 1
+    j = 1
+    for psi_i in psi_array:
+        for psi_j in psi_array:
+            print 'current', psi_i, "|", psi_j
+            print "Psy", i, "and Psy", j
+            integrand = ((psi_i * psi_j * r1 * r2 * r12)/PSI**2).expand()
+            # Extract coefficients and powers from integrand by turning integrand into a string and using
+            # regular expressions.
+            integrand_list = str(integrand).split(' ')
+            sign = 'pos'
+            coefficient = 1
+            
+            for k in integrand_list:
+                print k
+                r1_pow = 1
+                r2_pow = 1
+                r12_pow = 1
+                r1_search = search('r1\*\*(\d+)', k)
+                r2_search = search('r2\*\*(\d+)', k)
+                r12_search = search('r12\*\*(\d+)', k)
+                if r1_search:
+                    r1_pow = r1_search.group(1)
+                if r2_search:
+                    r2_pow = r2_search.group(1)
+                if r12_search:
+                    r12_pow = r12_search.group(1)
+                # Check to see if coefficient should be negative
+                if k == '-':
+                    sign = 'neg'
+                    continue
+                if k == '+':
+                    sign = 'pos'
+                    continue
+                if k[0] != 'r':
+                    coefficient = int(search(r'^\d+', k).group(0))
+                if k[0] == 'r':
+                    coefficient = 1
+                if sign == 'neg':
+                    coefficient = coefficient * -1
+                print 'coeff=', coefficient, 'L=', r1_pow, 'M=' , r2_pow, 'N=', r12_pow
+            
+            display(integrand)
+            print '\n'
+            j += 1
+        j = 1
+        i += 1
     
 def gen_wavefunction(l, m, n):
     """
@@ -65,16 +127,14 @@ def gen_wavefunction(l, m, n):
     to Hylleraas coordinate system.  
     
     """
-    exponential = -((a * r1) + (b * r2) + (g * r12)) 
-    psi = exp(exponential)
     # Generate coefficients
     coef = Symbol('c' + str(l) + str(m) + str(n))
-    wave_equation = coef * (s)**l * (t)**(2*m) * (u)**n * psi
+    wave_equation = (s)**l * (t)**(2*m) * (u)**n * PSI
     return wave_equation
 
 def make_waves(iterables):
     """
-    Make a bunch of wave functions over Cartesian product from 0 to iterables over length of LMN (3).  
+    Generate array of wave functions over Cartesian product from 0 to iterables over length of LMN (3).  
     Somewhat of a binary counting system that increments l, m, n.
     
     Note on iterables variable.  To make it more clear to user, up to what cardinal number he/she
@@ -85,18 +145,19 @@ def make_waves(iterables):
     
     """
     iterables += 2
-    my_list = []
+    lmn_values = []
+    wave_equations = []
     lower_bound = 0
     for i in xrange(0, iterables):
         for j in list(itertools.product(range(0,i), repeat = LMN_LENGTH)):
-            if j not in my_list:
-                my_list.append((j))
+            if j not in lmn_values:
+                lmn_values.append((j))
         
-    for tup in my_list:
-        l,m,n = tup
-        display(gen_wavefunction(l,m,n))
+    for i in lmn_values:
+        l,m,n = i
+        wave_equations.append(gen_wavefunction(l,m,n))
     
-    print len(my_list)    
+    return wave_equations
     
 def hamiltonian_r(wfunc):
     """
@@ -113,9 +174,8 @@ def hamiltonian_r(wfunc):
                   ((Z/r1) + (Z/r2) - (1/r12)) * wfunc) * \
                   (r1 * r2 * r12)
             
+    hamiltonian = (hamiltonian/PSI).expand()
     return hamiltonian
-    
-    
     
 def quantum_state(wf1, wf_H2):
     """
@@ -165,8 +225,3 @@ def quantum_state(wf1, wf_H2):
     
     #return q_statefinal
     """
-    
-    
-    
-    
-    

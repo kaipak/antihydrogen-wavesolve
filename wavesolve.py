@@ -25,9 +25,11 @@
   
 """
 
-
 import ws_maths, ws_physics, itertools
+
 #from bigfloat import *
+from multiprocessing import Pool
+from re import *
 from sympy import *
 import timeit
 from IPython.display import display
@@ -50,7 +52,17 @@ def main():
     #for row in L_alt:
     #    print row
     
-    ws_physics.make_waves(20)
+    wave_equations = ws_physics.make_waves(7)
+    testbed = []
+    for i in xrange(0, 10):
+        testbed.append(wave_equations[i])
+        i += 1
+        
+        
+    
+    ws_physics.gamma_transform(testbed)
+    ws_physics.hfs_gamma(1,1,3)
+    print ws_physics.hamiltonian_r(testbed[1])
         
     #hamiltonian = ws_physics.hamiltonian_r(test_psy)
     #print hamiltonian
