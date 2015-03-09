@@ -57,69 +57,67 @@ def hfs_gamma(l, m, n):
     
     big_gamma = fact_coef*big_gamma
     
-    #print str(big_gamma.simplify()).replace("**","^")
-    #print '\n'
-    #print str(big_gamma).replace("**","^")
-    #display(big_gamma * 8 * pi**2)
+    return float(big_gamma * 8 * pi**2)
     
-    print big_gamma * 8 * 3.1419**2
+def test_mp(wf1):
+    print wf1 * wf1
 
-def gamma_transform(psi_array):
+def extract_clmn(func1, func2):
     """
-    Take list/array of wave functions and generate values to be used in Harris, Frolov, and Smith
-    Equation.
+    Generalized function to extract coefficient, r1, r2, and r12 (correspending to L, M, and N)
+    values from <Psi_i|Psi_j> or <Psi_i|Operator|Psi_j> for primary purpose of being applied
+    to Harris, Frolov, and Smith Equation.
     
-    <Psy_i|Psy_j> = integral(Psy_i*Psy_j*r1*r2*r12dr1dr2dr12).  Pull out powers ot r1, r2, r12 from resultant
+    <Psi_i|Psi_j> = integral(Psy_i*Psy_j*r1*r2*r12dr1dr2dr12).  Pull out powers ot r1, r2, r12 from resultant
     polynomial to generate lmn numbers and gather coefficients.
     
+    From earlier comment, should be used for <Psi_i|H|Psi_j> as well.
+    
+    Return: list of tuples representing Coefficient,L,M,N values for use in Harris, Frolov, Smith
+    
     """
-    i = 1
-    j = 1
-    for psi_i in psi_array:
-        for psi_j in psi_array:
-            print 'current', psi_i, "|", psi_j
-            print "Psy", i, "and Psy", j
-            integrand = ((psi_i * psi_j * r1 * r2 * r12)/PSI**2).expand()
-            # Extract coefficients and powers from integrand by turning integrand into a string and using
-            # regular expressions.
-            integrand_list = str(integrand).split(' ')
+    integrand = ((func1 * func2 * r1 * r2 * r12)/PSI**2).expand()
+    
+    display(integrand)
+    
+    clmn = []
+    
+    # Extract coefficients and powers from integrand by turning integrand into a string and using
+    # regular expressions.
+    integrand_list = str(integrand).split(' ')
+    sign = 'pos'
+    coefficient = 1
+            
+    for k in integrand_list:
+        r1_pow = 1
+        r2_pow = 1
+        r12_pow = 1
+        r1_search = search('r1\*\*(\d+)', k)
+        r2_search = search('r2\*\*(\d+)', k)
+        r12_search = search('r12\*\*(\d+)', k)
+        if r1_search:
+            r1_pow = int(r1_search.group(1))
+        if r2_search:
+            r2_pow = int(r2_search.group(1))
+        if r12_search:
+            r12_pow = int(r12_search.group(1))
+        # Check to see if coefficient should be negative
+        if k == '-':
+            sign = 'neg'
+            continue
+        if k == '+':
             sign = 'pos'
+            continue
+        if k[0] != 'r':
+            coefficient = int(search(r'^\d+', k).group(0))
+        if k[0] == 'r':
             coefficient = 1
+        if sign == 'neg':
+            coefficient = coefficient * -1
+        # print 'coeff=', coefficient, 'L=', r1_pow, 'M=' , r2_pow, 'N=', r12_pow
+        clmn.append((coefficient, r1_pow, r2_pow, r12_pow))
             
-            for k in integrand_list:
-                print k
-                r1_pow = 1
-                r2_pow = 1
-                r12_pow = 1
-                r1_search = search('r1\*\*(\d+)', k)
-                r2_search = search('r2\*\*(\d+)', k)
-                r12_search = search('r12\*\*(\d+)', k)
-                if r1_search:
-                    r1_pow = r1_search.group(1)
-                if r2_search:
-                    r2_pow = r2_search.group(1)
-                if r12_search:
-                    r12_pow = r12_search.group(1)
-                # Check to see if coefficient should be negative
-                if k == '-':
-                    sign = 'neg'
-                    continue
-                if k == '+':
-                    sign = 'pos'
-                    continue
-                if k[0] != 'r':
-                    coefficient = int(search(r'^\d+', k).group(0))
-                if k[0] == 'r':
-                    coefficient = 1
-                if sign == 'neg':
-                    coefficient = coefficient * -1
-                print 'coeff=', coefficient, 'L=', r1_pow, 'M=' , r2_pow, 'N=', r12_pow
-            
-            display(integrand)
-            print '\n'
-            j += 1
-        j = 1
-        i += 1
+    return clmn
     
 def gen_wavefunction(l, m, n):
     """

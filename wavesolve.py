@@ -25,25 +25,28 @@
   
 """
 
-import ws_maths, ws_physics, itertools
-
+# Standard libraries
+import sympy
+import itertools
+import timeit
 #from bigfloat import *
 from multiprocessing import Pool
-from re import *
-from sympy import *
-import timeit
+from numpy import matrix, linalg
 from IPython.display import display
+
+# Custom libraries
+import ws_maths
+import ws_physics
 
 # Bits of precison that will be used throughout application
 #setcontext(quadruple_precision)
 
 def main():
-    init_printing()
     start_time = timeit.default_timer()
     
     # TEST CHOLESKY
-    #bigmatrix = ws_maths.rand_matrix(4)
-    #for row in bigmatrix:
+    # bigmatrix = ws_maths.rand_matrix(10)
+    # for row in bigmatrix:
     #    print row
     #print linalg.eig(bigmatrix)
     #L_alt = ws_maths.b_cholesky_L(bigmatrix)
@@ -52,29 +55,46 @@ def main():
     #for row in L_alt:
     #    print row
     
-    wave_equations = ws_physics.make_waves(7)
+    # Generate wave equations.  Note comments on make_waves function as this creates (n+1)^3
+    # Wave equations.
+    wave_equations = ws_physics.make_waves(10)
     testbed = []
-    for i in xrange(0, 10):
+    
+    # Pare down list to desire number of equations
+    # This is a n*n matrix, so variable to determine the ultimate size.
+    n_size = 2
+    
+    for i in xrange(0, n_size):
         testbed.append(wave_equations[i])
         i += 1
         
-        
+    # Generate <Psi_i|Psi_j> over matrix
+    psi_ij = [[0.0] * n_size for i in xrange(n_size)] 
     
-    ws_physics.gamma_transform(testbed)
-    ws_physics.hfs_gamma(1,1,3)
-    print ws_physics.hamiltonian_r(testbed[1])
-        
-    #hamiltonian = ws_physics.hamiltonian_r(test_psy)
-    #print hamiltonian
+    for i in xrange(0, n_size):
+        for j in xrange(0, n_size):
+            # Get coefficient, L, M, N values.
+            print '<psi', i, '|', 'psi', j, '>'
+            clmns = ws_physics.extract_clmn(testbed[i], testbed[j])
+            print '\n'
+            
+            testvalue = 0
+                
+            for k in clmns:
+                c,l,m,n = k
+                tempval = c * ws_physics.hfs_gamma(l, m, n)
+                testvalue += tempval
+            psi_ij[i][j] = testvalue
+            j += 1
+        i += 1
     
-    """
-    for term in test_psy:
-        hamiltonian.append(ws_physics.hamiltonian_r(term))
-    for term in hamiltonian:
-        display(term)
-        print term
-    """
-    #ws_physics.quantum_state(test_psy[0], hamiltonian[0])
+    for row in psi_ij:
+        print row
+    
+    neo = matrix(psi_ij)
+    
+    print '\n\nCholesky decomp below:\n'
+    print linalg.cholesky(neo)
     
     stop_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
