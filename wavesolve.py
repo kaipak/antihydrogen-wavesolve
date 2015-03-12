@@ -3,9 +3,6 @@
   Wavesolve program main program.  Runs main routine and calls calculations 
   from functions from math and physics libraries.
   
-  
-  Built using Canopy Enthought IDE and frameworks.
-  
   @required_packages
   bigfloat - Python wrapper for MPFR for handling arbitrarily large precision 
              floating point numbers.
@@ -26,17 +23,21 @@
 """
 
 # Standard libraries
-import sympy
+import sympy as sym
 import itertools
 import timeit
 #from bigfloat import *
 from multiprocessing import Pool
-from numpy import matrix, linalg
+from numpy import matrix, linalg, pi 
 from IPython.display import display
+from sympy import *
 
 # Custom libraries
 import ws_maths
 import ws_physics
+
+NSIZE = 2
+Z = 1
 
 # Bits of precison that will be used throughout application
 #setcontext(quadruple_precision)
@@ -44,57 +45,103 @@ import ws_physics
 def main():
     start_time = timeit.default_timer()
     
-    # TEST CHOLESKY
-    # bigmatrix = ws_maths.rand_matrix(10)
-    # for row in bigmatrix:
-    #    print row
-    #print linalg.eig(bigmatrix)
-    #L_alt = ws_maths.b_cholesky_L(bigmatrix)
-    #L = ws_maths.cholesky_L(bigmatrix)
-    #print "\n\nSome Cholesky Decomposition of a matrix:\n"
-    #for row in L_alt:
-    #    print row
+    sym.init_printing()
     
     # Generate wave equations.  Note comments on make_waves function as this creates (n+1)^3
     # Wave equations.
     wave_equations = ws_physics.make_waves(10)
-    testbed = []
+    psis = []
     
     # Pare down list to desire number of equations
-    # This is a n*n matrix, so variable to determine the ultimate size.
-    n_size = 2
-    
-    for i in xrange(0, n_size):
-        testbed.append(wave_equations[i])
+    for i in xrange(0, NSIZE):
+        psis.append(wave_equations[i])
         i += 1
         
     # Generate <Psi_i|Psi_j> over matrix
-    psi_ij = [[0.0] * n_size for i in xrange(n_size)] 
+    psi_ij = [[0.0] * NSIZE for i in xrange(NSIZE)] 
     
-    for i in xrange(0, n_size):
-        for j in xrange(0, n_size):
+    # Build matrix in following manner:
+    # [ n11, n12, n13]
+    # [      n22, n23]
+    # [           n33]
+    #
+    # As this is a symmetric matrix (<psi_i|psi_j> <psi_j|psi_i>, we save roughly n/2
+    # processing time by just mirroring from upper triangular
+    for i in xrange(0, NSIZE):
+        for j in xrange(i, NSIZE):
             # Get coefficient, L, M, N values.
             print '<psi', i, '|', 'psi', j, '>'
-            clmns = ws_physics.extract_clmn(testbed[i], testbed[j])
-            print '\n'
+            clmns = ws_physics.extract_clmn(psis[i], psis[j])
             
-            testvalue = 0
+            psi_ij_val = 0
                 
             for k in clmns:
                 c,l,m,n = k
-                tempval = c * ws_physics.hfs_gamma(l, m, n)
-                testvalue += tempval
-            psi_ij[i][j] = testvalue
+                psi_ij_val += c * ws_physics.hfs_gamma(l, m, n)
+            psi_ij_val = float(8 * pi**2 * psi_ij_val)
+            
+            psi_ij[i][j] = psi_ij_val
+            # As this is a symmetric matrix, save some calculation time by populating
+            # opposite side of matrix with same value.
+            if i != j:
+                psi_ij[j][i] = psi_ij_val
             j += 1
+            print psi_ij_val
+            print '****************************'
         i += 1
     
-    for row in psi_ij:
-        print row
+    # Build <Psi_i|H|Psi_j> over matrix in similar manner as previous step
+    hamiltonians = [] # Where we'll store wave equations with applied H operator
+    for i in psis:
+        hamiltonians.append(ws_physics.hamiltonian_r(i, Z))
     
-    neo = matrix(psi_ij)
+    # Generate Summation of <Psi_i|H|Psi_j>
+    psi_iHj = [[0.0] * NSIZE for i in xrange(NSIZE)]
     
-    print '\n\nCholesky decomp below:\n'
-    print linalg.cholesky(neo)
+    for i, j in zip(psis, hamiltonians):
+        ws_physics.extract_clmn(i,j)
+        
+    for i in xrange(0, NSIZE):
+        for j in xrange(0, NSIZE):
+            # Get coefficient, L, M, N values.
+            print '<psi', i, '|H|', 'psi', j, '>'
+            clmns = ws_physics.extract_clmn(psis[i], hamiltonians[j])
+            print clmns
+            psi_iHj_val = 0
+            for k in clmns:
+                c,l,m,n = k
+                psi_iHj_val += c * ws_physics.hfs_gamma(l, m, n)
+            psi_iHj_val = float(8 * pi**2 * psi_iHj_val)
+            
+            psi_iHj[i][j] = psi_iHj_val
+            # As this is a symmetric matrix, save some calculation time by populating
+            # opposite side of matrix with same value.
+            #if i != j:
+            #    psi_ij[j][i] = psi_ij_val
+            j += 1
+            print psi_iHj_val
+            print '****************************'
+        i += 1
+            
+            
+    E = Symbol('E')
+    matrix_ij = E * Matrix(psi_ij)
+    matrix_iHj = Matrix(psi_iHj)
+    
+    
+    submatrix = matrix_iHj - matrix_ij
+    print matrix_ij
+    print '\n'
+    print matrix_iHj
+    print '\n'
+    print submatrix
+    print '\n'
+    testeq = submatrix.det()
+    print testeq.simplify()
+    #print solve(testeq, E)
+    
+    
+    
     
     stop_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "

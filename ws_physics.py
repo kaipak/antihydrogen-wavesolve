@@ -6,8 +6,6 @@ from re import *
 import itertools
 import ws_maths
 
-
-
 A = Symbol('A')
 a = .70120
 b = .70120
@@ -57,7 +55,7 @@ def hfs_gamma(l, m, n):
     
     big_gamma = fact_coef*big_gamma
     
-    return float(big_gamma * 8 * pi**2)
+    return big_gamma
     
 def test_mp(wf1):
     print wf1 * wf1
@@ -78,7 +76,8 @@ def extract_clmn(func1, func2):
     """
     integrand = ((func1 * func2 * r1 * r2 * r12)/PSI**2).expand()
     
-    display(integrand)
+    #display(func1, func2)
+    print integrand
     
     clmn = []
     
@@ -89,6 +88,7 @@ def extract_clmn(func1, func2):
     coefficient = 1
             
     for k in integrand_list:
+        print k
         r1_pow = 1
         r2_pow = 1
         r12_pow = 1
@@ -109,12 +109,12 @@ def extract_clmn(func1, func2):
             sign = 'pos'
             continue
         if k[0] != 'r':
-            coefficient = int(search(r'^\d+', k).group(0))
+            coefficient = float(search(r'([-+]?\d*\.\d+|\d+)', k).group(0))
         if k[0] == 'r':
             coefficient = 1
         if sign == 'neg':
-            coefficient = coefficient * -1
-        # print 'coeff=', coefficient, 'L=', r1_pow, 'M=' , r2_pow, 'N=', r12_pow
+            coefficient = float(coefficient * -1)
+        #print 'coeff=', coefficient, 'L=', r1_pow, 'M=' , r2_pow, 'N=', r12_pow
         clmn.append((coefficient, r1_pow, r2_pow, r12_pow))
             
     return clmn
@@ -157,12 +157,13 @@ def make_waves(iterables):
     
     return wave_equations
     
-def hamiltonian_r(wfunc):
+def hamiltonian_r(wfunc, z_value):
     """
-    Solve Hamiltonian of wave function in r1, r2, r12 coordinate system
+    Apply Hamiltonian to wave function in r1, r2, r12 coordinate system.  z_value is atomic number, Z.
     
     """
-    # hamiltonian = Mul(0)
+    Z = z_value
+    
     hamiltonian = (-diff(wfunc, r1,2)/2 - diff(wfunc, r2, 2)/2 - diff(wfunc, r12, 2) - \
                   ((1/r1) * diff(wfunc, r1, 1)) - \
                   ((1/r2) * diff(wfunc, r2, 1)) - \
@@ -172,54 +173,4 @@ def hamiltonian_r(wfunc):
                   ((Z/r1) + (Z/r2) - (1/r12)) * wfunc) * \
                   (r1 * r2 * r12)
             
-    hamiltonian = (hamiltonian/PSI).expand()
     return hamiltonian
-    
-def quantum_state(wf1, wf_H2):
-    """
-    Solve <psy1|H|psy2> in r1, r2, r12 coordinate system.  Second wf should have
-    Hamiltonian already applied to it. 
-    
-    """
-
-    # Combine <psy1|H|psy2> with Volume element for integration: 
-    # 8pi^2 psy1(conj)*H*psy2(r1)(r2)(r12)
-    equation = wf1 * wf_H2 * r1 * r2 * r12
-    display(equation)
-    # equation = 8 * pi**2 * wf1 * r1 * r2 * r12
-    
-    piece1 = integrate(equation, (r12, (r1-r2), (r1+r2)), conds='none')
-    piece1 = integrate(piece1, (r1, 0, r2), conds='none' )
-    display(piece1)
-    
-    piece2 = integrate(equation, (r12, (r2-r1), (r1+r2)), conds='none').simplify()
-    piece2 = integrate(piece2, (r1, r2, oo))
-    
-    #display(integrate(exp(-r1), (r1, r2, oo))) 
-    
-    final = 8*pi**2 * (piece1 + piece2)
-    #display(final)
-    
-    display(integrate(final, (r2, 0, oo), conds='none'))
-    
-
-    """
-    # Separate absolute value parts into piece-wise integrals
-    q_state1 = integrate(equation, (r1, r1-r2, r1+r2), conds='none')
-    display(q_state1)
-    q_state1 = integrate(q_state1, (r12, 0, r2), conds='none')
-    display(q_state1)
-    
-    print "q_state2"
-    q_state2 = integrate(integrate(equation, (r1, -(r1-r2), r1+r2), conds='none'),(r12, r2, oo), conds='none')
-    display(q_state2)
-    
-    q_state = q_state1 + q_state2
-    display(q_state)
-    
-    #q_statefinal = (8*pi**2) * integrate(q_state, (r2, 0, oo), conds='none')
-    #display(q_statefinal)
-    
-    
-    #return q_statefinal
-    """
