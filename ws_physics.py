@@ -27,7 +27,7 @@ Z = Symbol('Z')
 EXPONENTIAL = -((a * r1) + (b * r2) + (g * r12))
 # Base wave equation we'll build on
 PSI = exp(EXPONENTIAL)
-LMN_LENGTH = 3
+LMN_LENGTH = 3 # used for determining Cartesian product for generating wave funcs.
     
 def hfs_gamma(l, m, n):
     """
@@ -76,8 +76,9 @@ def extract_clmn(func1, func2):
     """
     integrand = ((func1 * func2 * r1 * r2 * r12)/PSI**2).expand()
     
-    #display(func1, func2)
-    print integrand
+    # display(func1, func2)
+    # print 'dafuq'
+    # display(integrand)
     
     clmn = []
     
@@ -88,19 +89,36 @@ def extract_clmn(func1, func2):
     coefficient = 1
             
     for k in integrand_list:
-        print k
-        r1_pow = 1
-        r2_pow = 1
-        r12_pow = 1
-        r1_search = search('r1\*\*(\d+)', k)
-        r2_search = search('r2\*\*(\d+)', k)
-        r12_search = search('r12\*\*(\d+)', k)
+        
+        # Cascade through possible r values to determine power.  Should possibly
+        # make more elegant later        
+        r1_pow = 0
+        r2_pow = 0
+        r12_pow = 0
+        
+        # check to see if r values exist
+        r1_search = search('(r1\*|r1\s)', k)
+        r2_search = search('r2', k)
+        r12_search = search('r12', k)
+        
         if r1_search:
-            r1_pow = int(r1_search.group(1))
+            r1_pow = 1
         if r2_search:
-            r2_pow = int(r2_search.group(1))
+            r2_pow = 1    
         if r12_search:
-            r12_pow = int(r12_search.group(1))
+            r12_pow = 1        
+        
+        # check to see if r values have powers
+        r1_powsearch = search('r1\*\*(\d+)', k)
+        r2_powsearch = search('r2\*\*(\d+)', k)
+        r12_powsearch = search('r12\*\*(\d+)', k)
+        
+        if r1_powsearch:
+            r1_pow = int(r1_powsearch.group(1))
+        if r2_powsearch:
+            r2_pow = int(r2_powsearch.group(1))
+        if r12_powsearch:
+            r12_pow = int(r12_powsearch.group(1))
         # Check to see if coefficient should be negative
         if k == '-':
             sign = 'neg'
@@ -114,7 +132,7 @@ def extract_clmn(func1, func2):
             coefficient = 1
         if sign == 'neg':
             coefficient = float(coefficient * -1)
-        #print 'coeff=', coefficient, 'L=', r1_pow, 'M=' , r2_pow, 'N=', r12_pow
+        print 'coeff =', coefficient, 'L =', r1_pow, 'M =' , r2_pow, 'N =', r12_pow
         clmn.append((coefficient, r1_pow, r2_pow, r12_pow))
             
     return clmn
@@ -168,9 +186,32 @@ def hamiltonian_r(wfunc, z_value):
                   ((1/r1) * diff(wfunc, r1, 1)) - \
                   ((1/r2) * diff(wfunc, r2, 1)) - \
                   ((2/r12) * diff(wfunc, r12, 1)) - \
-                  (((r1**2 - r2**2 + r12**2)/(r1 * r12)) * diff(diff(wfunc, r12,1),r1,1)) - \
-                  (((r2**2 - r1**2 + r12**2)/(r2 * r12)) * diff(diff(wfunc, r12,1),r2,1)) - \
-                  ((Z/r1) + (Z/r2) - (1/r12)) * wfunc) * \
-                  (r1 * r2 * r12)
-            
+                  (((r1**2 - r2**2 + r12**2)/(2 * r1 * r12)) * diff(diff(wfunc, r1,1),r12,1)) - \
+                  (((r2**2 - r1**2 + r12**2)/(2 * r2 * r12)) * diff(diff(wfunc, r2,1),r12,1)) - \
+                  ((Z/r1) + (Z/r2) - (1/r12)) * wfunc)
+                  # (r1 * r2 * r12)
+    
+    print 'here is the funciton'
+    #display(wfunc)        
+    #display(hamiltonian)
+    return hamiltonian
+
+def ham_test(wfunc, z_value):
+    """
+    Apply Hamiltonian to wave function in r1, r2, r12 coordinate system.  z_value is atomic number, Z.
+    
+    """
+    Z = z_value
+    
+    hamiltonian = -diff(wfunc, r1,2)/2 - diff(wfunc, r2, 2)/2 - diff(wfunc, r12, 2) -\
+                  ((1/r1) * diff(wfunc, r1, 1)) - \
+                  ((1/r2) * diff(wfunc, r2, 1)) - \
+                  ((2/r12) * diff(wfunc, r12, 1)) - \
+                  (((r1**2 - r2**2 + r12**2)/(2 * r1 * r12)) * diff(diff(wfunc, r1,1),r12,1)) - \
+                  (((r2**2 - r1**2 + r12**2)/(2 * r2 * r12)) * diff(diff(wfunc, r2,1),r12,1)) - \
+                  ((Z/r1) + (Z/r2) - (1/r12)) * wfunc
+    
+    print 'here is the func'
+    display(wfunc)        
+    display(hamiltonian.expand())
     return hamiltonian
