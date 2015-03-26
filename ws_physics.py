@@ -57,9 +57,6 @@ def hfs_gamma(l, m, n):
     
     return big_gamma
     
-def test_mp(wf1):
-    print wf1 * wf1
-
 def extract_clmn(func1, func2):
     """
     Generalized function to extract coefficient, r1, r2, and r12 (correspending to L, M, and N)
@@ -136,6 +133,22 @@ def extract_clmn(func1, func2):
         clmn.append((coefficient, r1_pow, r2_pow, r12_pow))
             
     return clmn
+
+def get_qstate(bra, ket):
+    """
+    Get quantum state (inner product) of bra and ket utilizing Frolov, Smith, and Harris
+    analytic equation for radial integral.  If operator applied (e.g.,, Hamiltonian,
+    that should happen to ket before this function is called
+    """
+    clmns = extract_clmn(bra, ket)
+    innerprod = 0
+    
+    for i in clmns:
+        c,l,m,n = i
+        innerprod += c * hfs_gamma(l, m, n)
+                
+    innerprod = N(8 * pi**2 * innerprod, 4)
+    return innerprod
     
 def gen_wavefunction(l, m, n):
     """
@@ -191,27 +204,6 @@ def hamiltonian_r(wfunc, z_value):
                   ((Z/r1) + (Z/r2) - (1/r12)) * wfunc)
                   # (r1 * r2 * r12)
     
-    print 'here is the funciton'
     #display(wfunc)        
     #display(hamiltonian)
-    return hamiltonian
-
-def ham_test(wfunc, z_value):
-    """
-    Apply Hamiltonian to wave function in r1, r2, r12 coordinate system.  z_value is atomic number, Z.
-    
-    """
-    Z = z_value
-    
-    hamiltonian = -diff(wfunc, r1,2)/2 - diff(wfunc, r2, 2)/2 - diff(wfunc, r12, 2) -\
-                  ((1/r1) * diff(wfunc, r1, 1)) - \
-                  ((1/r2) * diff(wfunc, r2, 1)) - \
-                  ((2/r12) * diff(wfunc, r12, 1)) - \
-                  (((r1**2 - r2**2 + r12**2)/(2 * r1 * r12)) * diff(diff(wfunc, r1,1),r12,1)) - \
-                  (((r2**2 - r1**2 + r12**2)/(2 * r2 * r12)) * diff(diff(wfunc, r2,1),r12,1)) - \
-                  ((Z/r1) + (Z/r2) - (1/r12)) * wfunc
-    
-    print 'here is the func'
-    display(wfunc)        
-    display(hamiltonian.expand())
     return hamiltonian

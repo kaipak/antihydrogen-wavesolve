@@ -36,7 +36,7 @@ from IPython.display import display
 import ws_maths
 import ws_physics
 
-NSIZE = 3
+NSIZE = 100
 Z = 1
 
 # Bits of precison that will be used throughout application
@@ -58,6 +58,7 @@ def main():
         i += 1
     """
     # Generate <Psi_i|Psi_j> over matrix
+    # Chris Keating wave functions for test
     
     psis.append(ws_physics.gen_wavefunction(0, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 1))
@@ -78,23 +79,14 @@ def main():
     # processing time by just mirroring from upper triangular
     for i in xrange(0, NSIZE):
         for j in xrange(i, NSIZE):
-            # Get coefficient, L, M, N values.
-            clmns = ws_physics.extract_clmn(psis[i], psis[j])
-            
-            psi_ij_val = 0
-                
-            for k in clmns:
-                c,l,m,n = k
-                psi_ij_val += c * ws_physics.hfs_gamma(l, m, n)
-            psi_ij_val = N(8 * pi**2 * psi_ij_val,32)
-            
+            psi_ij_val = ws_physics.get_qstate(psis[i], psis[j])
             psi_ij[i][j] = psi_ij_val
             # As this is a symmetric matrix, save some calculation time by populating
             # opposite side of matrix with same value.
             if i != j:
                 psi_ij[j][i] = psi_ij_val
     
-    # Build <Psi_i|H|Psi_j> over matrix in similar manner as previous step
+    # Now build <Psi_i|H|Psi_j> over matrix in similar manner as previous step
     hamiltonians = [] # Where we'll store wave equations with applied H operator
     for i in psis:
         hamiltonians.append(ws_physics.hamiltonian_r(i, Z))
@@ -104,15 +96,7 @@ def main():
         
     for i in xrange(0, NSIZE):
         for j in xrange(0, NSIZE):
-            # Get coefficient, L, M, N values.
-            clmns = ws_physics.extract_clmn(psis[i], hamiltonians[j])
-            psi_iHj_val = 0
-            
-            for k in clmns:
-                c,l,m,n = k
-                psi_iHj_val += c * ws_physics.hfs_gamma(l, m, n)
-                
-            psi_iHj_val = N(8 * pi**2 * psi_iHj_val, 32)
+            psi_iHj_val = ws_physics.get_qstate(psis[i], hamiltonians[j])
             psi_iHj[i][j] = psi_iHj_val
             # As this is a symmetric matrix, save some calculation time by populating
             # opposite side of matrix with same value.
@@ -120,14 +104,7 @@ def main():
             if i != j:
                 psi_iHj[j][i] = psi_iHj_val
             
-            
     E = Symbol('E')
-    kai_eye = [[0.0] * NSIZE for i in xrange(NSIZE)] 
-    
-   
-    display(kai_eye)
-    
-    
     matrix_ij = E * Matrix(psi_ij)
     matrix_iHj = Matrix(psi_iHj)
     print '\n'
@@ -140,34 +117,10 @@ def main():
     display(submatrix)
     print '\n'
     
-    
-    chol = submatrix.cholesky()
     print '\n'
-    # display(chol)
-    chol_det = 1    
-    for i in xrange(0, NSIZE):
-        chol_det *= chol[i,i]**2
-        print chol_det
-    chol_det = chol_det.simplify()
-    # print display(chol_det)
-    print solve(chol_det, rational=False)
-    print '\n'
+    #display(submatrix.det().normal().expand())
+    #print solve(submatrix.det(), rational=False)
     
-    
-    print '\n'
-    display(submatrix.det().normal().expand())
-    
-    print solve(submatrix.det(), rational=False)
-    
-    berk_det = submatrix.berkowitz_det().expand()
-    #testeq = submatrix.det().expand()
-    #display(testeq)
-    #display(berk_det)    
-    #berk_ans = solve(berk_det, E, rational=False)
-    #print berk_ans
-    #n_ans = solve(testeq, rational=False)
-    #print n_ans
-   
     stop_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
     print stop_time - start_time
