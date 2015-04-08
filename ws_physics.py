@@ -1,32 +1,33 @@
 from IPython.display import display
 import numpy as np
 import scipy.misc as sc
-from sympy import *
-from re import *
+import sympy as sym
 import itertools
 import ws_maths
+import re
 
-A = Symbol('A')
+A = sym.Symbol('A')
 a = .70120
 b = .70120
 g = 0
-m = Symbol('m')
-n = Symbol('n')
-r1 = Symbol('r1')
-r2 = Symbol('r2')
-r12 = Symbol('r12')
+m = sym.Symbol('m')
+n = sym.Symbol('n')
+r1 = sym.Symbol('r1')
+r2 = sym.Symbol('r2')
+r12 = sym.Symbol('r12')
 
 # Hylleras coordinate stuff (transform later?)
 s = r1 + r2
 t = r1 - r2
 u = r12
 
-Z = Symbol('Z')
+Z = sym.Symbol('Z')
 
 # Constants
 EXPONENTIAL = -((a * r1) + (b * r2) + (g * r12))
+PREC = 32
 # Base wave equation we'll build on
-PSI = exp(EXPONENTIAL)
+PSI = sym.exp(EXPONENTIAL)
 LMN_LENGTH = 3 # used for determining Cartesian product for generating wave funcs.
     
 def hfs_gamma(l, m, n):
@@ -39,11 +40,11 @@ def hfs_gamma(l, m, n):
     fact_coef = 2 * np.math.factorial(l) * np.math.factorial(m) \
                 * np.math.factorial(n)
         
-    x = 2*a + 2*b
-    y = 2*a + 2*g
-    z = 2*b + 2*g
+    x = sym.Float(2*a + 2*b, PREC)
+    y = sym.Float(2*a + 2*g, PREC)
+    z = sym.Float(2*b + 2*g, PREC)
         
-    big_gamma = Mul(0)
+    big_gamma = sym.Mul(0)
     
     for l_prime in range(0,l+1):
         for m_prime in range(0,m+1):     
@@ -53,7 +54,7 @@ def hfs_gamma(l, m, n):
                  sc.comb((n - n_prime + m_prime), m_prime) / \
                 (x**(m-m_prime+l_prime+1)*y**(l-l_prime+n_prime+1)*z**(n-n_prime+m_prime+1)))
     
-    big_gamma = fact_coef*big_gamma
+    big_gamma = sym.Float(fact_coef*big_gamma, PREC)
     
     return big_gamma
     
@@ -74,7 +75,6 @@ def extract_clmn(func1, func2):
     integrand = ((func1 * func2 * r1 * r2 * r12)/PSI**2).expand()
     
     # display(func1, func2)
-    # print 'dafuq'
     # display(integrand)
     
     clmn = []
@@ -94,9 +94,9 @@ def extract_clmn(func1, func2):
         r12_pow = 0
         
         # check to see if r values exist
-        r1_search = search('(r1\*|r1\s)', k)
-        r2_search = search('r2', k)
-        r12_search = search('r12', k)
+        r1_search = re.search('(r1\*|r1\s)', k)
+        r2_search = re.search('r2', k)
+        r12_search = re.search('r12', k)
         
         if r1_search:
             r1_pow = 1
@@ -106,9 +106,9 @@ def extract_clmn(func1, func2):
             r12_pow = 1        
         
         # check to see if r values have powers
-        r1_powsearch = search('r1\*\*(\d+)', k)
-        r2_powsearch = search('r2\*\*(\d+)', k)
-        r12_powsearch = search('r12\*\*(\d+)', k)
+        r1_powsearch = re.search('r1\*\*(\d+)', k)
+        r2_powsearch = re.search('r2\*\*(\d+)', k)
+        r12_powsearch = re.search('r12\*\*(\d+)', k)
         
         if r1_powsearch:
             r1_pow = int(r1_powsearch.group(1))
@@ -124,12 +124,12 @@ def extract_clmn(func1, func2):
             sign = 'pos'
             continue
         if k[0] != 'r':
-            coefficient = float(search(r'([-+]?\d*\.\d+|\d+)', k).group(0))
+            coefficient = sym.Float(re.search(r'([-+]?\d*\.\d+|\d+)', k).group(0), PREC)
         if k[0] == 'r':
             coefficient = 1
         if sign == 'neg':
-            coefficient = float(coefficient * -1)
-        print 'coeff =', coefficient, 'L =', r1_pow, 'M =' , r2_pow, 'N =', r12_pow
+            coefficient = sym.Float(coefficient * -1, PREC)
+        # print 'coeff =', coefficient, 'L =', r1_pow, 'M =' , r2_pow, 'N =', r12_pow
         clmn.append((coefficient, r1_pow, r2_pow, r12_pow))
             
     return clmn
@@ -146,8 +146,8 @@ def get_qstate(bra, ket):
     for i in clmns:
         c,l,m,n = i
         innerprod += c * hfs_gamma(l, m, n)
-                
-    innerprod = N(8 * pi**2 * innerprod, 4)
+    
+    innerprod = sym.N(8 * sym.pi**2 * innerprod, PREC)
     return innerprod
     
 def gen_wavefunction(l, m, n):
@@ -157,7 +157,7 @@ def gen_wavefunction(l, m, n):
     
     """
     # Generate coefficients
-    coef = Symbol('c' + str(l) + str(m) + str(n))
+    coef = sym.Symbol('c' + str(l) + str(m) + str(n))
     wave_equation = (s)**l * (t)**(2*m) * (u)**n * PSI
     return wave_equation
 
@@ -177,14 +177,24 @@ def make_waves(iterables):
     lmn_values = []
     wave_equations = []
     lower_bound = 0
+    
+    """
     for i in xrange(0, iterables):
         for j in list(itertools.product(range(0,i), repeat = LMN_LENGTH)):
             if j not in lmn_values:
-                lmn_values.append((j))
-        
+                lmn_values.append(j)
+    """
+    for i in list(itertools.product(range(0,iterables), repeat = LMN_LENGTH)):
+        l,m,n = i
+        print i
+        wave_equations.append(gen_wavefunction(l,m,n))
+
+    """
     for i in lmn_values:
         l,m,n = i
+        print i
         wave_equations.append(gen_wavefunction(l,m,n))
+    """
     
     return wave_equations
     
@@ -195,14 +205,13 @@ def hamiltonian_r(wfunc, z_value):
     """
     Z = z_value
     
-    hamiltonian = (-diff(wfunc, r1,2)/2 - diff(wfunc, r2, 2)/2 - diff(wfunc, r12, 2) - \
-                  ((1/r1) * diff(wfunc, r1, 1)) - \
-                  ((1/r2) * diff(wfunc, r2, 1)) - \
-                  ((2/r12) * diff(wfunc, r12, 1)) - \
-                  (((r1**2 - r2**2 + r12**2)/(2 * r1 * r12)) * diff(diff(wfunc, r1,1),r12,1)) - \
-                  (((r2**2 - r1**2 + r12**2)/(2 * r2 * r12)) * diff(diff(wfunc, r2,1),r12,1)) - \
+    hamiltonian = (-sym.diff(wfunc, r1,2)/2 - sym.diff(wfunc, r2, 2)/2 - sym.diff(wfunc, r12, 2) - \
+                  ((1/r1) * sym.diff(wfunc, r1, 1)) - \
+                  ((1/r2) * sym.diff(wfunc, r2, 1)) - \
+                  ((2/r12) * sym.diff(wfunc, r12, 1)) - \
+                  (((r1**2 - r2**2 + r12**2)/(2 * r1 * r12)) * sym.diff(sym.diff(wfunc, r1,1),r12,1)) - \
+                  (((r2**2 - r1**2 + r12**2)/(2 * r2 * r12)) * sym.diff(sym.diff(wfunc, r2,1),r12,1)) - \
                   ((Z/r1) + (Z/r2) - (1/r12)) * wfunc)
-                  # (r1 * r2 * r12)
     
     #display(wfunc)        
     #display(hamiltonian)
