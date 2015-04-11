@@ -1,4 +1,5 @@
 from IPython.display import display
+from numbapro import vectorize
 import numpy as np
 import scipy.misc as sc
 import sympy as sym
@@ -197,7 +198,7 @@ def make_waves(iterables):
     """
     
     return wave_equations
-    
+
 def hamiltonian_r(wfunc, z_value):
     """
     Apply Hamiltonian to wave function in r1, r2, r12 coordinate system.  z_value is atomic number, Z.

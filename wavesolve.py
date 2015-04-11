@@ -24,9 +24,9 @@
 
 # Standard libraries
 import itertools
-
 import timeit
 from sympy import *
+from numbapro import cuda
 from multiprocessing import Pool
 from numpy import matrix, linalg, pi, set_printoptions
 from IPython.display import display
