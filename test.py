@@ -6,6 +6,7 @@
 import itertools
 import timeit
 import numpy as np
+import multiprocessing as mp
 from sympy import *
 from multiprocessing import Pool
 from IPython.display import display
@@ -14,29 +15,28 @@ from IPython.display import display
 import ws_maths
 import ws_physics
 
-NSIZE = 20
+NSIZE = 200
 Z = 1
 PREC = 32
 
 np.set_printoptions(precision=PREC)
 
-@vectorize(['float32(float32, float32)'], target='gpu')
-def Add(a, b):
-    return a + b
-
 def main():
     start_time = timeit.default_timer()
     init_printing()
     
-    wave_equations = ws_physics.make_waves(2)
+    wave_equations = ws_physics.make_waves(4)
     psis = []
      
     # Pare down list to desire number of equations
     for i in xrange(0, NSIZE):
         psis.append(wave_equations[i])
         i += 1
-    
-    print psis
+    pool = mp.Pool(processes=None)
+    hamiltonians = [pool.apply_async(ws_physics.hamiltonian_r,args=(psis[x], Z)) for x in xrange(0, NSIZE)]
+    print hamiltonians
+    output = [p.get() for p in hamiltonians]
+    print output
     
     
     print '\n'

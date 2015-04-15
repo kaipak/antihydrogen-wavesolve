@@ -1,10 +1,8 @@
 from IPython.display import display
-from numbapro import vectorize
 import numpy as np
 import scipy.misc as sc
 import sympy as sym
 import itertools
-import ws_maths
 import re
 
 A = sym.Symbol('A')
@@ -26,7 +24,8 @@ Z = sym.Symbol('Z')
 
 # Constants
 EXPONENTIAL = -((a * r1) + (b * r2) + (g * r12))
-PREC = 32
+PREC = 16
+
 # Base wave equation we'll build on
 PSI = sym.exp(EXPONENTIAL)
 LMN_LENGTH = 3 # used for determining Cartesian product for generating wave funcs.
