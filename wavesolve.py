@@ -33,7 +33,7 @@ from IPython.display import display
 import ws_maths
 import ws_physics
 
-NSIZE = 6
+NSIZE = 20
 Z = 1
 PREC = 16
 
@@ -47,6 +47,7 @@ def main():
     wave_equations = ws_physics.make_waves(4)
     psis = []
     
+    """
     # Chris Wave funcs
     psis.append(ws_physics.gen_wavefunction(0, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 1))
@@ -60,7 +61,7 @@ def main():
     for i in xrange(0, NSIZE):
         psis.append(wave_equations[i])
         i += 1
-    """    
+    
    
     matrix_ij = [[0.0] * NSIZE for i in xrange(NSIZE)] 
     
@@ -71,16 +72,16 @@ def main():
     #
     # As this is a symmetric matrix (<psi_i|psi_j> <psi_j|psi_i>, we save roughly n/2
     # processing time by just mirroring from upper triangular
+    # Multiprocessing version
+    #
     for i in xrange(0, NSIZE):
         print 'Constructing row', i, 'of <i|j>'
-        for j in xrange(i, NSIZE):
-            psi_ij = ws_physics.get_qstate(psis[i], psis[j])
-            matrix_ij[i][j] = psi_ij
-            # As this is a symmetric matrix, save some calculation time by populating
-            # opposite side of matrix with same value.
-            if i != j:
-                matrix_ij[j][i] = psi_ij
-    
+        pool = mp.Pool(processes=None)
+        psirowobj = [pool.apply_async(ws_physics.get_qstate, args=(psis[i],psis[j])) \
+                  for j in xrange(0, NSIZE)]
+        psirow = [p.get() for p in psirowobj]
+        matrix_ij[i] = psirow
+    print matrix_ij
     matrix_ij_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
     print matrix_ij_time - start_time
@@ -95,13 +96,11 @@ def main():
         
     for i in xrange(0, NSIZE):
         print 'Constructing row', i, 'of <i|H|j>'
-        for j in xrange(0, NSIZE):
-            psi_iHj = ws_physics.get_qstate(psis[i], hamiltonians[j])
-            matrix_iHj[i][j] = psi_iHj
-            # As this is a symmetric matrix, save some calculation time by populating
-            # opposite side of matrix with same value.
-            if i != j:
-                matrix_iHj[j][i] = psi_iHj
+        pool = mp.Pool(processes=None)
+        psi_iHj_rowobj = [pool.apply_async(ws_physics.get_qstate, args=(psis[i],\
+                          hamiltonians[j])) for j in xrange(0, NSIZE)]
+        psi_iHj_row = [p.get() for p in psi_iHj_rowobj]
+        matrix_iHj[i] = psi_iHj_row
             
     matrix_iHj_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
