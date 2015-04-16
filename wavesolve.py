@@ -35,9 +35,9 @@ from IPython.display import display
 import ws_maths
 import ws_physics
 
-NSIZE = 6
+NSIZE = 100
 Z = 1
-PREC = 32
+PREC = 16
 
 set_printoptions(precision=PREC)
 
@@ -48,10 +48,10 @@ def main():
     
     # Generate wave equations.  Note comments on make_waves function as this creates (n+1)^3
     # Wave equations.
-    # wave_equations = ws_physics.make_waves(2)
+    wave_equations = ws_physics.make_waves(4)
     psis = []
     
-    
+    """
     # Chris Wave funcs
     psis.append(ws_physics.gen_wavefunction(0, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 1))
@@ -65,7 +65,6 @@ def main():
     for i in xrange(0, NSIZE):
         psis.append(wave_equations[i])
         i += 1
-    """
     
     matrix_ij = [[0.0] * NSIZE for i in xrange(NSIZE)] 
     

@@ -22,7 +22,7 @@ from scipy import linalg, array
 from IPython.display import display
 from sympy import *
 
-PREC = 32
+PREC = 16
 
 np.set_printoptions(precision=PREC)
 
