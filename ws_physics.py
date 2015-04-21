@@ -3,7 +3,6 @@ import numpy as np
 import scipy.misc as sc
 import sympy as sym
 import itertools
-import ws_maths
 import re
 
 A = sym.Symbol('A')
@@ -25,7 +24,8 @@ Z = sym.Symbol('Z')
 
 # Constants
 EXPONENTIAL = -((a * r1) + (b * r2) + (g * r12))
-PREC = 32
+PREC = 16
+
 # Base wave equation we'll build on
 PSI = sym.exp(EXPONENTIAL)
 LMN_LENGTH = 3 # used for determining Cartesian product for generating wave funcs.
@@ -60,16 +60,23 @@ def hfs_gamma(l, m, n):
     
 def extract_clmn(func1, func2):
     """
-    Generalized function to extract coefficient, r1, r2, and r12 (correspending to L, M, and N)
-    values from <Psi_i|Psi_j> or <Psi_i|Operator|Psi_j> for primary purpose of being applied
-    to Harris, Frolov, and Smith Equation.
+    Generalized function to extract coefficient, r1, r2, and r12 (correspending
+    to L, M, and N) values from <Psi_i|Psi_j> or <Psi_i|Operator|Psi_j> for
+    primary purpose of being applied to Harris, Frolov, and Smith Equation.
     
-    <Psi_i|Psi_j> = integral(Psy_i*Psy_j*r1*r2*r12dr1dr2dr12).  Pull out powers ot r1, r2, r12 from resultant
-    polynomial to generate lmn numbers and gather coefficients.
+    <Psi_i|Psi_j> = integral(Psy_i*Psy_j*r1*r2*r12dr1dr2dr12).  Pull out powers
+    of r1, r2, r12 from resultant polynomial to generate lmn numbers and gather
+    coefficients.
     
     From earlier comment, should be used for <Psi_i|H|Psi_j> as well.
     
-    Return: list of tuples representing Coefficient,L,M,N values for use in Harris, Frolov, Smith
+    Keyword Arguments:
+    func1 -- a wave function (bra according to Dirac bra-ket notation)
+    func2 -- a wave function (ket according to Dirac bra-ket notation)
+    
+    Returns:
+    clmn -- list of tuples representing Coefficient,L,M,N values for use in
+            Harris, Frolov, Smith
     
     """
     integrand = ((func1 * func2 * r1 * r2 * r12)/PSI**2).expand()
@@ -197,7 +204,7 @@ def make_waves(iterables):
     """
     
     return wave_equations
-    
+
 def hamiltonian_r(wfunc, z_value):
     """
     Apply Hamiltonian to wave function in r1, r2, r12 coordinate system.  z_value is atomic number, Z.

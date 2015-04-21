@@ -1,22 +1,11 @@
 """
-
   Wavesolve program main program.  Runs main routine and calls calculations 
   from functions from math and physics libraries.
   
-  @required_packages
-  bigfloat - Python wrapper for MPFR for handling arbitrarily large precision 
-             floating point numbers.
-  MPFR - GNU C library for multiple-precision floating-point computation.  Note,
-         GMP is required for installation.
-         http://www.mpfr.org
-  GMP - GNU Multiple Precision library for arbitrary precision 
-        arithmetic, operating on signed integers, rational numbers, and 
-        floating-point numbers.
-        https://gmplib.org/
-  
-  @author Kai Pak
-  @start_date January 1, 2014
-  @current_version 1.0
+  --author - Kai Pak
+  --start_date - January 1, 2014
+  --relase date - April 30, 2015
+  --current_version - 1.0
   
   History
   
@@ -24,18 +13,20 @@
 
 # Standard libraries
 import itertools
-
 import timeit
-from sympy import *
-from multiprocessing import Pool
-from numpy import matrix, linalg, pi, set_printoptions
+import multiprocessing as mp
+from numpy import array, matrix, linalg, pi, set_printoptions
 from IPython.display import display
 
 # Custom libraries
 import ws_maths
 import ws_physics
 
+<<<<<<< HEAD
 NSIZE = 100
+=======
+NSIZE = 20
+>>>>>>> cuda-branch
 Z = 1
 PREC = 16
 
@@ -44,6 +35,7 @@ set_printoptions(precision=PREC)
 def main():
     start_time = timeit.default_timer()
     
+<<<<<<< HEAD
     init_printing()
     
     # Generate wave equations.  Note comments on make_waves function as this creates (n+1)^3
@@ -52,6 +44,13 @@ def main():
     psis = []
     
     """
+=======
+    # Generate wave equations.  Note comments on make_waves function as this
+    # creates (n+1)^3 wave equations.
+    wave_equations = ws_physics.make_waves(4)
+    psis = []
+    
+>>>>>>> cuda-branch
     # Chris Wave funcs
     psis.append(ws_physics.gen_wavefunction(0, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 1))
@@ -59,12 +58,27 @@ def main():
     psis.append(ws_physics.gen_wavefunction(1, 0, 0))
     psis.append(ws_physics.gen_wavefunction(2, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 2))  
+    psis.append(ws_physics.gen_wavefunction(0, 2, 0))
+    psis.append(ws_physics.gen_wavefunction(0, 1, 1))
+    psis.append(ws_physics.gen_wavefunction(1, 1, 0))
+    psis.append(ws_physics.gen_wavefunction(1, 0, 1))
+    psis.append(ws_physics.gen_wavefunction(0, 0, 3))
+    psis.append(ws_physics.gen_wavefunction(0, 3, 0))  
+    psis.append(ws_physics.gen_wavefunction(3, 0, 0))  
+    psis.append(ws_physics.gen_wavefunction(0, 1, 2))
+    psis.append(ws_physics.gen_wavefunction(1, 0, 2))  
+    psis.append(ws_physics.gen_wavefunction(0, 2, 1))  
+    psis.append(ws_physics.gen_wavefunction(2, 0, 1))
+    psis.append(ws_physics.gen_wavefunction(2, 1, 0))  
+    psis.append(ws_physics.gen_wavefunction(1, 2, 0))  
+    psis.append(ws_physics.gen_wavefunction(1, 1, 1))  
     
     """
     # Pare down list to desire number of equations
     for i in xrange(0, NSIZE):
         psis.append(wave_equations[i])
         i += 1
+<<<<<<< HEAD
     
     matrix_ij = [[0.0] * NSIZE for i in xrange(NSIZE)] 
     
@@ -84,29 +98,22 @@ def main():
             # opposite side of matrix with same value.
             if i != j:
                 matrix_ij[j][i] = psi_ij
+=======
+    """
+    matrix_ij =  build_matrix(psis, psis, '<i|j>')
+>>>>>>> cuda-branch
     
     matrix_ij_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
     print matrix_ij_time - start_time
     
-    # Now build <Psi_i|H|Psi_j> over matrix in similar manner as previous step
-    hamiltonians = [] # Where we'll store wave equations with applied H operator
+    # Now build <Psi_i|H|Psi_j> 
+    hamiltonians = [] # wave equations with applied H operator
     for i in psis:
         hamiltonians.append(ws_physics.hamiltonian_r(i, Z))
     
-    # Generate Summation of <Psi_i|H|Psi_j>
-    matrix_iHj = [[0.0] * NSIZE for i in xrange(NSIZE)]
+    matrix_iHj = build_matrix(psis, hamiltonians, '<i|H|j>')
         
-    for i in xrange(0, NSIZE):
-        print 'Constructing row', i, 'of <i|H|j>'
-        for j in xrange(0, NSIZE):
-            psi_iHj = ws_physics.get_qstate(psis[i], hamiltonians[j])
-            matrix_iHj[i][j] = psi_iHj
-            # As this is a symmetric matrix, save some calculation time by populating
-            # opposite side of matrix with same value.
-            if i != j:
-                matrix_iHj[j][i] = psi_iHj
-            
     matrix_iHj_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
     print matrix_iHj_time - start_time
@@ -118,6 +125,48 @@ def main():
     stop_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
     print stop_time - start_time
+
+def build_matrix(psis_i, psis_j, bracket_notation):
+    """Generate nxn matrix by determining inner product of psi_i and psi_j
+    
+    Keyword arguments:
+    psi_i -- an array of bras (according to Dirac bra-ket notation)
+    psi_i -- an array of kets (according to Dirac bra-ket notation)
+    bracket_notation -- some string describing what bra-ket value you're
+                        trying to construct, e.g., <psi_i|H|psi_j>
+                        
+    Returns:
+    matrix -- an nxn matrix with all calculated inner products
+    
+     Build matrix in following manner:
+    [ n11, n12, n13]
+    [      n22, n23]
+    [           n33]
+   
+    As these are symmetric matrices, we save roughly n/2 processing time by
+    just mirroring from upper triangular
+    
+    Multiprocessing version
+    """
+    matrix = [[0.0] * NSIZE for i in xrange(NSIZE)]
+    
+    
+    for i in xrange(0, NSIZE):
+        print 'Constructing row', i, 'of', bracket_notation
+        
+        pool = mp.Pool(processes = None)
+        psirowobj = [pool.apply_async(ws_physics.get_qstate,
+                                      args=(psis_i[i],psis_j[j]))
+                     for j in xrange(i, NSIZE)]
+        psirow = [p.get() for p in psirowobj]
+        pool.terminate()
+        
+        # Now populate row and its transpose column since this is a symmetric matrix
+        for j in xrange(0, len(psirow)):
+            matrix[i][i+j] = psirow[j]
+            matrix[i+j][i] = psirow[j]
+        
+    return matrix
     
 if __name__ == '__main__':
     main()
