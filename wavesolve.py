@@ -22,11 +22,7 @@ from IPython.display import display
 import ws_maths
 import ws_physics
 
-<<<<<<< HEAD
-NSIZE = 100
-=======
 NSIZE = 20
->>>>>>> cuda-branch
 Z = 1
 PREC = 16
 
@@ -35,22 +31,12 @@ set_printoptions(precision=PREC)
 def main():
     start_time = timeit.default_timer()
     
-<<<<<<< HEAD
-    init_printing()
     
     # Generate wave equations.  Note comments on make_waves function as this creates (n+1)^3
     # Wave equations.
     wave_equations = ws_physics.make_waves(4)
     psis = []
     
-    """
-=======
-    # Generate wave equations.  Note comments on make_waves function as this
-    # creates (n+1)^3 wave equations.
-    wave_equations = ws_physics.make_waves(4)
-    psis = []
-    
->>>>>>> cuda-branch
     # Chris Wave funcs
     psis.append(ws_physics.gen_wavefunction(0, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 1))
@@ -78,30 +64,8 @@ def main():
     for i in xrange(0, NSIZE):
         psis.append(wave_equations[i])
         i += 1
-<<<<<<< HEAD
-    
-    matrix_ij = [[0.0] * NSIZE for i in xrange(NSIZE)] 
-    
-    # Build matrix in following manner:
-    # [ n11, n12, n13]
-    # [      n22, n23]
-    # [           n33]
-    #
-    # As this is a symmetric matrix (<psi_i|psi_j> <psi_j|psi_i>, we save roughly n/2
-    # processing time by just mirroring from upper triangular
-    for i in xrange(0, NSIZE):
-        print 'Constructing row', i, 'of <i|j>'
-        for j in xrange(i, NSIZE):
-            psi_ij = ws_physics.get_qstate(psis[i], psis[j])
-            matrix_ij[i][j] = psi_ij
-            # As this is a symmetric matrix, save some calculation time by populating
-            # opposite side of matrix with same value.
-            if i != j:
-                matrix_ij[j][i] = psi_ij
-=======
-    """
+    """    
     matrix_ij =  build_matrix(psis, psis, '<i|j>')
->>>>>>> cuda-branch
     
     matrix_ij_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
