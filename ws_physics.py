@@ -28,7 +28,7 @@ PREC = 16
 
 # Base wave equation we'll build on
 PSI = sym.exp(EXPONENTIAL)
-LMN_LENGTH = 3 # used for determining Cartesian product for generating wave funcs.
+LMN_LENGTH = 3 # determine Cartesian product for generating wave funcs.
     
 def hfs_gamma(l, m, n):
     """

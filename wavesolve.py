@@ -22,9 +22,9 @@ from IPython.display import display
 import ws_maths
 import ws_physics
 
-NSIZE = 20
+NSIZE = 10
 Z = 1
-PREC = 16
+PREC = 32
 
 set_printoptions(precision=PREC)
 
@@ -37,17 +37,18 @@ def main():
     wave_equations = ws_physics.make_waves(4)
     psis = []
     
-    # Chris Wave funcs
-    psis.append(ws_physics.gen_wavefunction(0, 0, 0))
-    psis.append(ws_physics.gen_wavefunction(0, 0, 1))
-    psis.append(ws_physics.gen_wavefunction(0, 1, 0))
-    psis.append(ws_physics.gen_wavefunction(1, 0, 0))
-    psis.append(ws_physics.gen_wavefunction(2, 0, 0))
-    psis.append(ws_physics.gen_wavefunction(0, 0, 2))  
-    psis.append(ws_physics.gen_wavefunction(0, 2, 0))
+    
+    # Chris/Jack Wave funcs
+    psis.append(ws_physics.gen_wavefunction(1, 1, 1))
     psis.append(ws_physics.gen_wavefunction(0, 1, 1))
-    psis.append(ws_physics.gen_wavefunction(1, 1, 0))
     psis.append(ws_physics.gen_wavefunction(1, 0, 1))
+    psis.append(ws_physics.gen_wavefunction(1, 1, 0))
+    psis.append(ws_physics.gen_wavefunction(2, 1, 0))
+    psis.append(ws_physics.gen_wavefunction(1, 2, 0))  
+    psis.append(ws_physics.gen_wavefunction(0, 1, 2))
+    psis.append(ws_physics.gen_wavefunction(1, 0, 2))
+    psis.append(ws_physics.gen_wavefunction(0, 3, 0))
+    psis.append(ws_physics.gen_wavefunction(3, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 3))
     psis.append(ws_physics.gen_wavefunction(0, 3, 0))  
     psis.append(ws_physics.gen_wavefunction(3, 0, 0))  
@@ -59,12 +60,13 @@ def main():
     psis.append(ws_physics.gen_wavefunction(1, 2, 0))  
     psis.append(ws_physics.gen_wavefunction(1, 1, 1))  
     
-    """
+    """    
     # Pare down list to desire number of equations
     for i in xrange(0, NSIZE):
         psis.append(wave_equations[i])
         i += 1
-    """    
+    """
+
     matrix_ij =  build_matrix(psis, psis, '<i|j>')
     
     matrix_ij_time = timeit.default_timer()
