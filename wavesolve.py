@@ -22,8 +22,14 @@ from IPython.display import display
 import ws_maths
 import ws_physics
 
-NSIZE = 10
-Z = 1
+# Physical parameters
+ALPHA = .70120
+BETA = .70120
+GAMMA = 0
+ZED = 1
+
+# Application attributes
+NSIZE = 6
 PREC = 32
 
 set_printoptions(precision=PREC)
@@ -32,6 +38,7 @@ def main():
     start_time = timeit.default_timer()
     
     
+    ws_physics.set_params(ALPHA, BETA, GAMMA, ZED, PREC)
     # Generate wave equations.  Note comments on make_waves function as this creates (n+1)^3
     # Wave equations.
     wave_equations = ws_physics.make_waves(4)
@@ -39,12 +46,12 @@ def main():
     
     
     # Chris/Jack Wave funcs
-    psis.append(ws_physics.gen_wavefunction(1, 1, 1))
-    psis.append(ws_physics.gen_wavefunction(0, 1, 1))
-    psis.append(ws_physics.gen_wavefunction(1, 0, 1))
-    psis.append(ws_physics.gen_wavefunction(1, 1, 0))
-    psis.append(ws_physics.gen_wavefunction(2, 1, 0))
-    psis.append(ws_physics.gen_wavefunction(1, 2, 0))  
+    psis.append(ws_physics.gen_wavefunction(0, 0, 0))
+    psis.append(ws_physics.gen_wavefunction(0, 0, 1))
+    psis.append(ws_physics.gen_wavefunction(0, 1, 0))
+    psis.append(ws_physics.gen_wavefunction(1, 0, 0))
+    psis.append(ws_physics.gen_wavefunction(2, 0, 0))
+    psis.append(ws_physics.gen_wavefunction(0, 0, 2))  
     psis.append(ws_physics.gen_wavefunction(0, 1, 2))
     psis.append(ws_physics.gen_wavefunction(1, 0, 2))
     psis.append(ws_physics.gen_wavefunction(0, 3, 0))
@@ -76,7 +83,7 @@ def main():
     # Now build <Psi_i|H|Psi_j> 
     hamiltonians = [] # wave equations with applied H operator
     for i in psis:
-        hamiltonians.append(ws_physics.hamiltonian_r(i, Z))
+        hamiltonians.append(ws_physics.hamiltonian_r(i))
     
     matrix_iHj = build_matrix(psis, hamiltonians, '<i|H|j>')
         

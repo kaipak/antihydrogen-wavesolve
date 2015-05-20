@@ -5,12 +5,6 @@ import sympy as sym
 import itertools
 import re
 
-A = sym.Symbol('A')
-a = .70120
-b = .70120
-g = 0
-m = sym.Symbol('m')
-n = sym.Symbol('n')
 r1 = sym.Symbol('r1')
 r2 = sym.Symbol('r2')
 r12 = sym.Symbol('r12')
@@ -20,21 +14,49 @@ s = r1 + r2
 t = r1 - r2
 u = r12
 
-Z = sym.Symbol('Z')
-
-# Constants
-EXPONENTIAL = -((a * r1) + (b * r2) + (g * r12))
-PREC = 16
-
-# Base wave equation we'll build on
-PSI = sym.exp(EXPONENTIAL)
 LMN_LENGTH = 3 # determine Cartesian product for generating wave funcs.
+
+def set_params(alpha, beta, gamma, zed, prec=16): 
+    """
+    Globally set parameters for later function calls.  Something of a poor man's
+    OOP and an effort to curtail the dreaded creep of spaghetti code.  Allows
+    centralized parameter instatiation from main.  Additional parms should be added
+    here first.
+    
+    Keyword arguments:
+    a,b,g - parameters required for particular problem.
+    z - atomic number
+    """
+    global a 
+    global b
+    global g
+    global Z
+    a = alpha
+    b = beta
+    g = gamma
+    Z = zed
+    
+    global EXPONENTIAL
+    global PREC
+    global PSI
+    PREC =prec
+    EXPONENTIAL = -((a * r1) + (b * r2) + (g * r12))
+    PSI = sym.exp(EXPONENTIAL)
+    
+    
     
 def hfs_gamma(l, m, n):
     """
     Using Harris, Frolov, and Smith paper (J. Chem Phys., Vol. 121, No. 13
     Oct. 2004), generate radial integral or gamma function 
     (alpha=a, beta=b, gamma=g) using l,m,n quantum states.
+    
+    Keyword arguments:
+    l, m, n -- parameters corresponding to powers of s, t, u respectively.
+    a, b, g -- independently derived parameters unique to problem being solved.
+    
+    Returns:
+    float(16,32,64,etc) -- A numerical value of the gamma function
     
     """
     fact_coef = 2 * np.math.factorial(l) * np.math.factorial(m) \
@@ -57,7 +79,7 @@ def hfs_gamma(l, m, n):
     big_gamma = sym.Float(fact_coef*big_gamma, PREC)
     
     return big_gamma
-    
+
 def extract_clmn(func1, func2):
     """
     Generalized function to extract coefficient, r1, r2, and r12 (correspending
@@ -205,12 +227,12 @@ def make_waves(iterables):
     
     return wave_equations
 
-def hamiltonian_r(wfunc, z_value):
+def hamiltonian_r(wfunc):
     """
     Apply Hamiltonian to wave function in r1, r2, r12 coordinate system.  z_value is atomic number, Z.
     
     """
-    Z = z_value
+    # Z = z_value
     
     hamiltonian = (-sym.diff(wfunc, r1,2)/2 - sym.diff(wfunc, r2, 2)/2 - sym.diff(wfunc, r12, 2) - \
                   ((1/r1) * sym.diff(wfunc, r1, 1)) - \
