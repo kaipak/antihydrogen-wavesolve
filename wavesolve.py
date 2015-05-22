@@ -29,7 +29,7 @@ GAMMA = 0
 ZED = 1
 
 # Application attributes
-NSIZE = 6
+NSIZE = 20
 PREC = 32
 
 set_printoptions(precision=PREC)
@@ -39,8 +39,8 @@ def main():
     
     
     ws_physics.set_params(ALPHA, BETA, GAMMA, ZED, PREC)
-    # Generate wave equations.  Note comments on make_waves function as this creates (n+1)^3
-    # Wave equations.
+    # Generate wave equations.  Note comments on make_waves function as this
+    # creates (n+1)^3 wave equations.
     wave_equations = ws_physics.make_waves(4)
     psis = []
     
@@ -48,24 +48,24 @@ def main():
     # Chris/Jack Wave funcs
     psis.append(ws_physics.gen_wavefunction(0, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 1))
-    psis.append(ws_physics.gen_wavefunction(0, 1, 0))
+    psis.append(ws_physics.gen_wavefunction(0, 2, 0))
     psis.append(ws_physics.gen_wavefunction(1, 0, 0))
     psis.append(ws_physics.gen_wavefunction(2, 0, 0))
     psis.append(ws_physics.gen_wavefunction(0, 0, 2))  
-    psis.append(ws_physics.gen_wavefunction(0, 1, 2))
-    psis.append(ws_physics.gen_wavefunction(1, 0, 2))
-    psis.append(ws_physics.gen_wavefunction(0, 3, 0))
-    psis.append(ws_physics.gen_wavefunction(3, 0, 0))
+    psis.append(ws_physics.gen_wavefunction(1, 0, 1))
+    psis.append(ws_physics.gen_wavefunction(0, 2, 1))
     psis.append(ws_physics.gen_wavefunction(0, 0, 3))
-    psis.append(ws_physics.gen_wavefunction(0, 3, 0))  
+    psis.append(ws_physics.gen_wavefunction(0, 2, 2))
+    psis.append(ws_physics.gen_wavefunction(1, 2, 0))
     psis.append(ws_physics.gen_wavefunction(3, 0, 0))  
-    psis.append(ws_physics.gen_wavefunction(0, 1, 2))
-    psis.append(ws_physics.gen_wavefunction(1, 0, 2))  
-    psis.append(ws_physics.gen_wavefunction(0, 2, 1))  
-    psis.append(ws_physics.gen_wavefunction(2, 0, 1))
-    psis.append(ws_physics.gen_wavefunction(2, 1, 0))  
-    psis.append(ws_physics.gen_wavefunction(1, 2, 0))  
-    psis.append(ws_physics.gen_wavefunction(1, 1, 1))  
+    psis.append(ws_physics.gen_wavefunction(0, 2, 4))  
+    psis.append(ws_physics.gen_wavefunction(0, 0, 4))
+    psis.append(ws_physics.gen_wavefunction(0, 0, 5))  
+    psis.append(ws_physics.gen_wavefunction(0, 2, 3))  
+    psis.append(ws_physics.gen_wavefunction(2, 2, 0))
+    psis.append(ws_physics.gen_wavefunction(4, 0, 0))  
+    psis.append(ws_physics.gen_wavefunction(1, 2, 1))  
+    psis.append(ws_physics.gen_wavefunction(0, 4, 0))  
     
     """    
     # Pare down list to desire number of equations

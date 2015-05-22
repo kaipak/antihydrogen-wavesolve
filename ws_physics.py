@@ -18,10 +18,10 @@ LMN_LENGTH = 3 # determine Cartesian product for generating wave funcs.
 
 def set_params(alpha, beta, gamma, zed, prec=16): 
     """
-    Globally set parameters for later function calls.  Something of a poor man's
-    OOP and an effort to curtail the dreaded creep of spaghetti code.  Allows
-    centralized parameter instatiation from main.  Additional parms should be added
-    here first.
+    Globally set parameters for later function calls.  Something of a poor
+    man's OOP and an effort to curtail the dreaded creep of spaghetti code.
+    Allows centralized parameter instatiation from main.  Additional parms
+    should be added here first.
     
     Keyword arguments:
     a,b,g - parameters required for particular problem.
@@ -187,7 +187,7 @@ def gen_wavefunction(l, m, n):
     """
     # Generate coefficients
     coef = sym.Symbol('c' + str(l) + str(m) + str(n))
-    wave_equation = (s)**l * (t)**(2*m) * (u)**n * PSI
+    wave_equation = (s)**l * (t)**(m) * (u)**n * PSI
     return wave_equation
 
 def make_waves(iterables):
