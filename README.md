@@ -27,6 +27,8 @@ in several experimental endeavors at CERN trying to find better methodologies of
 ## Tests
 
 ## Contributors
+Jack Straton
+Chris Keating
 
 ## License
 
