@@ -16,34 +16,53 @@ u = r12
 
 LMN_LENGTH = 3 # determine Cartesian product for generating wave funcs.
 
-def set_params(alpha, beta, gamma, zed, prec=16): 
+def dyn_params(alpha, beta, gamma):
     """
-    Globally set parameters for later function calls.  Something of a poor
-    man's OOP and an effort to curtail the dreaded creep of spaghetti code.
-    Allows centralized parameter instatiation from main.  Additional parms
-    should be added here first.
+      Dynmanic parameters that will change depending on other physical
+      factors
+    """
     
-    Keyword arguments:
-    a,b,g - parameters required for particular problem.
-    z - atomic number
-    """
     global a 
     global b
     global g
-    global Z
     a = alpha
     b = beta
     g = gamma
+    global exponential
+    global psi
+    exponential = -((a * r1) + (b * r2) + (g * r12))
+    psi = sym.exp(exponential)
+
+def static_params(a1, a2, b1, b2, g1, g2, eta, zed, nsize, prec=16): 
+    """
+    Globally set STATIC parameters for later function calls.  Something of
+    a poor man's OOP and an effort to curtail the dreaded creep of
+    spaghetti code.
+    Keyword arguments:
+     - parameters required for particular problem that generally do not
+       change.
+    z - atomic number
+    """
+    global A1
+    global A2
+    global B1
+    global B2
+    global ETA
+    global Z
     Z = zed
     
-    global EXPONENTIAL
+    # Specific to p10diag problem from JS
+    A1 = a1
+    A2 = a2
+    B1 = b1
+    B2 = b2
+    ETA = eta
+    
     global PREC
-    global PSI
-    PREC =prec
-    EXPONENTIAL = -((a * r1) + (b * r2) + (g * r12))
-    PSI = sym.exp(EXPONENTIAL)
+    global NSIZE
     
-    
+    NSIZE = nsize
+    PREC = prec
     
 def hfs_gamma(l, m, n):
     """
@@ -101,7 +120,7 @@ def extract_clmn(func1, func2):
             Harris, Frolov, Smith
     
     """
-    integrand = ((func1 * func2 * r1 * r2 * r12)/PSI**2).expand()
+    integrand = ((func1 * func2 * r1 * r2 * r12)/psi**2).expand()
     
     # display(func1, func2)
     # display(integrand)
@@ -187,7 +206,7 @@ def gen_wavefunction(l, m, n):
     """
     # Generate coefficients
     coef = sym.Symbol('c' + str(l) + str(m) + str(n))
-    wave_equation = (s)**l * (t)**(m) * (u)**n * PSI
+    wave_equation = (s)**l * (t)**(m) * (u)**n * psi
     return wave_equation
 
 def make_waves(iterables):
@@ -245,3 +264,23 @@ def hamiltonian_r(wfunc):
     #display(wfunc)        
     #display(hamiltonian)
     return hamiltonian
+
+def ths_alpha():
+    """ Alpha values as defined by Thakkar and Vedene H.Smith, Jr.
+        Phys Rev A 15, 1 (1977)
+    
+    Returns:
+    list -- array of alpha values
+    
+    """
+    alphas = []
+    
+    for i in xrange(1, NSIZE):
+        # decompose number extract fractional part
+        num_comps = np.modf((i*(i+1)*np.sqrt(2))/2)
+        frac = num_comps[0]
+        num = ETA * (((A2 - A1)*frac) + A1)
+        alphas.append(num)
+    
+    return alphas
+    
