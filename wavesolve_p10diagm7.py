@@ -37,8 +37,12 @@ set_printoptions(precision=PREC)
 def main():
     start_time = timeit.default_timer()
     ws_physics.static_params(A1, A2, B1, B2, G1, G2, ETA, Z, NSIZE, PREC)
-    alphas = ws_physics.ths_alpha()
+    alphas = ws_physics.thakar_smith_param(A1, A2, 2)
+    betas = ws_physics.thakar_smith_param(B1, B2, 3)
+    gammas = ws_physics.thakar_smith_param(G1, G2, 5)
     print alphas
+    print betas
+    print gammas
     
 
 def build_matrix(psis_i, psis_j, bracket_notation):

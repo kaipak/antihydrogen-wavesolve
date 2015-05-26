@@ -9,6 +9,10 @@ r1 = sym.Symbol('r1')
 r2 = sym.Symbol('r2')
 r12 = sym.Symbol('r12')
 
+alpha = sym.Symbol('alpha')
+beta = sym.Symbol('beta')
+gamma = sym.Symbol('gamma')
+
 # Hylleras coordinate stuff (transform later?)
 s = r1 + r2
 t = r1 - r2
@@ -16,28 +20,14 @@ u = r12
 
 LMN_LENGTH = 3 # determine Cartesian product for generating wave funcs.
 
-def dyn_params(alpha, beta, gamma):
-    """
-      Dynmanic parameters that will change depending on other physical
-      factors
-    """
-    
-    global a 
-    global b
-    global g
-    a = alpha
-    b = beta
-    g = gamma
-    global exponential
-    global psi
-    exponential = -((a * r1) + (b * r2) + (g * r12))
-    psi = sym.exp(exponential)
-
 def static_params(a1, a2, b1, b2, g1, g2, eta, zed, nsize, prec=16): 
     """
     Globally set STATIC parameters for later function calls.  Something of
     a poor man's OOP and an effort to curtail the dreaded creep of
-    spaghetti code.
+    spaghetti code.  This is generally frowned upon practice, but done to
+    to make setting of global parameters more user friendly from main.  
+    Dynamic parameters such as alpha, beta should NOT be defined here.
+
     Keyword arguments:
      - parameters required for particular problem that generally do not
        change.
@@ -63,8 +53,8 @@ def static_params(a1, a2, b1, b2, g1, g2, eta, zed, nsize, prec=16):
     
     NSIZE = nsize
     PREC = prec
-    
-def hfs_gamma(l, m, n):
+
+def hfs_gamma(l, m, n, alpha, beta, gamma):
     """
     Using Harris, Frolov, and Smith paper (J. Chem Phys., Vol. 121, No. 13
     Oct. 2004), generate radial integral or gamma function 
@@ -78,6 +68,12 @@ def hfs_gamma(l, m, n):
     float(16,32,64,etc) -- A numerical value of the gamma function
     
     """
+
+    a = alpha
+    b = beta
+    g = gamma
+
+
     fact_coef = 2 * np.math.factorial(l) * np.math.factorial(m) \
                 * np.math.factorial(n)
         
@@ -99,10 +95,10 @@ def hfs_gamma(l, m, n):
     
     return big_gamma
 
-def extract_clmn(func1, func2):
-    """
-    Generalized function to extract coefficient, r1, r2, and r12 (correspending
-    to L, M, and N) values from <Psi_i|Psi_j> or <Psi_i|Operator|Psi_j> for
+def extract_clmn(func1, func2, alpha, beta, gamma):
+    """ Generalized function to extract coefficient, r1, r2, and r12 
+
+    Values from <Psi_i|Psi_j> or <Psi_i|Operator|Psi_j> for
     primary purpose of being applied to Harris, Frolov, and Smith Equation.
     
     <Psi_i|Psi_j> = integral(Psy_i*Psy_j*r1*r2*r12dr1dr2dr12).  Pull out powers
@@ -112,14 +108,16 @@ def extract_clmn(func1, func2):
     From earlier comment, should be used for <Psi_i|H|Psi_j> as well.
     
     Keyword Arguments:
-    func1 -- a wave function (bra according to Dirac bra-ket notation)
-    func2 -- a wave function (ket according to Dirac bra-ket notation)
+    func1, func2 -- wave functions (bra according to Dirac bra-ket notation)
     
     Returns:
     clmn -- list of tuples representing Coefficient,L,M,N values for use in
             Harris, Frolov, Smith
     
     """
+    exponential = -((alpha * r1) + (beta * r2) + (gamma * r12))
+    psi = sym.exp(exponential)
+
     integrand = ((func1 * func2 * r1 * r2 * r12)/psi**2).expand()
     
     # display(func1, func2)
@@ -127,8 +125,8 @@ def extract_clmn(func1, func2):
     
     clmn = []
     
-    # Extract coefficients and powers from integrand by turning integrand into a string and using
-    # regular expressions.
+    # Extract coefficients and powers from integrand by turning 
+    # integrand into a string and using regular expressions.
     integrand_list = str(integrand).split(' ')
     sign = 'pos'
     coefficient = 1
@@ -182,40 +180,50 @@ def extract_clmn(func1, func2):
             
     return clmn
 
-def get_qstate(bra, ket):
+def get_qstate(bra, ket, alpha, beta, gamma):
+    """Calculate inner-product of wavefunctions
+
+    Entry point to get quantum state of bra and ket utilizing Frolov, 
+    Smith, and Harris analytic equation for radial integral.  If 
+    operator applied (e.g.,, Hamiltonian, that should happen to ket 
+    before this function is called
+
     """
-    Get quantum state (inner product) of bra and ket utilizing Frolov, Smith, and Harris
-    analytic equation for radial integral.  If operator applied (e.g.,, Hamiltonian,
-    that should happen to ket before this function is called
-    """
-    clmns = extract_clmn(bra, ket)
+    clmns = extract_clmn(bra, ket, alpha, beta, gamma)
     innerprod = 0
     
     for i in clmns:
         c,l,m,n = i
-        innerprod += c * hfs_gamma(l, m, n)
+        innerprod += c * hfs_gamma(l, m, n, alpha, beta, gamma)
     
     innerprod = sym.N(8 * sym.pi**2 * innerprod, PREC)
     return innerprod
     
-def gen_wavefunction(l, m, n):
+def gen_wavefunction(l, m, n, alpha, beta, gamma):
     """
-    Generate wave function with arbitrary number of terms.  Need to later convert
-    to Hylleraas coordinate system.  
+    Generate wave function with arbitrary number of terms.  Need to 
+    later convert to Hylleraas coordinate system.  
     
     """
+    
+    exponential = -((alpha * r1) + (beta * r2) + (gamma * r12))
+    psi = sym.exp(exponential)
     # Generate coefficients
-    coef = sym.Symbol('c' + str(l) + str(m) + str(n))
+    # coef = sym.Symbol('c' + str(l) + str(m) + str(n))
+
+
     wave_equation = (s)**l * (t)**(m) * (u)**n * psi
     return wave_equation
 
 def make_waves(iterables):
     """
-    Generate array of wave functions over Cartesian product from 0 to iterables over length of LMN (3).  
-    Somewhat of a binary counting system that increments l, m, n.
+    Generate array of wave functions over Cartesian product from 0 to 
+    iterables over length of LMN (3). Somewhat of a binary counting 
+    system that increments l, m, n.
     
-    Note on iterables variable.  To make it more clear to user, up to what cardinal number he/she
-    is using. 1, up to '1', 2, up to '2' and so on.  Otherwise, it 2 would be 0 and 1, and that gets
+    Note on iterables variable.  To make it more clear to user, up to 
+    what cardinal number he/she is using. 1, up to '1', 2, up to '2' 
+    and so on.  Otherwise, it 2 would be 0 and 1, and that gets
     confusing.
     
     Produces (iterables + 1)^3 permutations of wave functions
@@ -246,13 +254,10 @@ def make_waves(iterables):
     
     return wave_equations
 
-def hamiltonian_r(wfunc):
-    """
-    Apply Hamiltonian to wave function in r1, r2, r12 coordinate system.  z_value is atomic number, Z.
+def hamiltonian_r(wfunc, alpha, beta, gamma):
+    """Calcualte Hamiltonian to wave function in r1, r2, r12
     
     """
-    # Z = z_value
-    
     hamiltonian = (-sym.diff(wfunc, r1,2)/2 - sym.diff(wfunc, r2, 2)/2 - sym.diff(wfunc, r12, 2) - \
                   ((1/r1) * sym.diff(wfunc, r1, 1)) - \
                   ((1/r2) * sym.diff(wfunc, r2, 1)) - \
@@ -261,26 +266,24 @@ def hamiltonian_r(wfunc):
                   (((r2**2 - r1**2 + r12**2)/(2 * r2 * r12)) * sym.diff(sym.diff(wfunc, r2,1),r12,1)) - \
                   ((Z/r1) + (Z/r2) - (1/r12)) * wfunc)
     
-    #display(wfunc)        
-    #display(hamiltonian)
     return hamiltonian
 
-def ths_alpha():
-    """ Alpha values as defined by Thakkar and Vedene H.Smith, Jr.
-        Phys Rev A 15, 1 (1977)
+def thakar_smith_param(L1, L2, num_rad):
+    """ Parameter values as defined by Thakkar and Vedene H.Smith, Jr.
+        Phys Rev A 15, 1 (1977). Defined for alpha, beta, and gamma in
+        paper.
     
     Returns:
-    list -- array of alpha values
+    list -- array of parameter values
     
     """
-    alphas = []
+    params = []
     
     for i in xrange(1, NSIZE):
         # decompose number extract fractional part
-        num_comps = np.modf((i*(i+1)*np.sqrt(2))/2)
+        num_comps = np.modf((i*(i+1)*np.sqrt(num_rad))/2)
         frac = num_comps[0]
-        num = ETA * (((A2 - A1)*frac) + A1)
-        alphas.append(num)
+        num = ETA * (((L2 - L1)*frac) + L1)
+        params.append(num)
     
-    return alphas
-    
+    return params
