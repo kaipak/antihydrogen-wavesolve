@@ -29,9 +29,11 @@ def static_params(a1, a2, b1, b2, g1, g2, eta, zed, nsize, prec=16):
     Dynamic parameters such as alpha, beta should NOT be defined here.
 
     Keyword arguments:
-     - parameters required for particular problem that generally do not
-       change.
-    z - atomic number
+    a1, a2, b1, etc. - parameters required for particular problem that do 
+                       not change.
+
+    Z - atomic number
+
     """
     global A1
     global A2
@@ -73,13 +75,12 @@ def hfs_gamma(l, m, n, alpha, beta, gamma):
     b = beta
     g = gamma
 
-
     fact_coef = 2 * np.math.factorial(l) * np.math.factorial(m) \
                 * np.math.factorial(n)
         
-    x = sym.Float(2*a + 2*b, PREC)
-    y = sym.Float(2*a + 2*g, PREC)
-    z = sym.Float(2*b + 2*g, PREC)
+    x = sym.Float(a + b, PREC)
+    y = sym.Float(a + g, PREC)
+    z = sym.Float(b + g, PREC)
         
     big_gamma = sym.Mul(0)
     
@@ -267,6 +268,26 @@ def hamiltonian_r(wfunc, alpha, beta, gamma):
                   ((Z/r1) + (Z/r2) - (1/r12)) * wfunc)
     
     return hamiltonian
+
+def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
+    """Return innner product of <psi_f| H | psi_i>"""
+
+    alphanm = alpha_n + alpha_m
+    betanm = beta_n + beta_m
+    gammanm = gamma_n + gamma_m
+
+    innerprod = 8 * sym.pi**2 * ((-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm))) +
+                                  ((alpha_m - Z) * hfs_gamma(0, 1, 1, alphanm, betanm, gammanm)) +
+                                  ((beta_m - Z) * hfs_gamma(1, 0, 1, alphanm, betanm, gammanm)) +
+                                  ((1 + (2 * gamma_m)) * hfs_gamma(1, 1, 0, alphanm, betanm, gammanm)) -
+                                  (((gamma_m * alpha_m)/2) * hfs_gamma(2, 1, 0, alphanm, betanm, gammanm)) -
+                                  (((gamma_m * beta_m)/2) * hfs_gamma(1, 2, 0, alphanm, betanm, gammanm)) -
+                                  (((gamma_m * alpha_m)/2) * hfs_gamma(0, 1, 2, alphanm, betanm, gammanm)) -
+                                  (((gamma_m * beta_m)/2) * hfs_gamma(1, 0, 2, alphanm, betanm, gammanm)) +
+                                  (((gamma_m * alpha_m)/2) * hfs_gamma(0, 3, 0, alphanm, betanm, gammanm)) +
+                                  (((gamma_m * beta_m)/2) * hfs_gamma(3, 0, 0, alphanm, betanm, gammanm)))
+
+    return innerprod
 
 def thakar_smith_param(L1, L2, num_rad):
     """ Parameter values as defined by Thakkar and Vedene H.Smith, Jr.

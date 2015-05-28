@@ -30,7 +30,7 @@ ETA = 1 - 8.439*(10**-6)
 
 # Application attributes
 NSIZE = 11
-PREC = 32
+PREC = 16
 
 set_printoptions(precision=PREC)
 
@@ -39,11 +39,24 @@ def main():
     ws_physics.static_params(A1, A2, B1, B2, G1, G2, ETA, Z, NSIZE, PREC)
     alphas = ws_physics.thakar_smith_param(A1, A2, 2)
     betas = ws_physics.thakar_smith_param(B1, B2, 3)
-    gammas = ws_physics.thakar_smith_param(G1, G2, 5)
-    print alphas
-    print betas
-    print gammas
-    
+    gammas = ws_physics.thakar_smith_param(G1, G2, 5) 
+
+    print float(ws_physics.psif_H_psii(1,1,1,1,1,1))
+    print float(ws_physics.hfs_gamma(1,1,1,1,1,1))
+
+#    for m in xrange(0, 10):
+#        for n in range(0, 10):
+#            val = float(ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n], \
+#                                         alphas[m], betas[m], gammas[m]) +\
+#                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
+#                                         alphas[m], betas[m], gammas[m]) +\
+#                  ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n],\
+#                                         betas[m], alphas[m], gammas[m]) +\
+#                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
+#                                         betas[m], alphas[m], gammas[m]))
+#            print val
+#        print '/n'
+
 
 def build_matrix(psis_i, psis_j, bracket_notation):
     """Generate nxn matrix by determining inner product of psi_i and psi_j
@@ -75,7 +88,8 @@ def build_matrix(psis_i, psis_j, bracket_notation):
         
         pool = mp.Pool(processes = None)
         psirowobj = [pool.apply_async(ws_physics.get_qstate,
-                                      args=(psis_i[i],psis_j[j]))
+                                      args=(psis_i[i],psis_j[j],
+                                            ALPHA, BETA, GAMMA))
                      for j in xrange(i, NSIZE)]
         psirow = [p.get() for p in psirowobj]
         pool.terminate()
