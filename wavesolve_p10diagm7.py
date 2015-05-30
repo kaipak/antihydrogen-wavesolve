@@ -13,23 +13,24 @@ import timeit
 import multiprocessing as mp
 from numpy import array, matrix, linalg, pi, set_printoptions, modf
 from IPython.display import display
+import sympy as sym
 
 # Custom libraries
 import ws_maths
 import ws_physics
 
 # Physical parameters
-A1 = .2480
-A2 = .8270
-B1 = .852
-B2 = 1.1260
-G1 = -.0520
-G2 = .1050
+A1 = .1280
+A2 = 1.2460
+B1 = .8890
+B2 = 1.2030
+G1 = -.1100
+G2 = .3420
 Z  = 1
-ETA = 1 - 8.439*(10**-6)
+ETA = 1 + 2.314*(10**-9)
 
 # Application attributes
-NSIZE = 11
+NSIZE = 60
 PREC = 16
 
 set_printoptions(precision=PREC)
@@ -40,23 +41,38 @@ def main():
     alphas = ws_physics.thakar_smith_param(A1, A2, 2)
     betas = ws_physics.thakar_smith_param(B1, B2, 3)
     gammas = ws_physics.thakar_smith_param(G1, G2, 5) 
+    print alphas
 
-    print float(ws_physics.psif_H_psii(1,1,1,1,1,1))
-    print float(ws_physics.hfs_gamma(1,1,1,1,1,1))
 
-#    for m in xrange(0, 10):
-#        for n in range(0, 10):
-#            val = float(ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n], \
-#                                         alphas[m], betas[m], gammas[m]) +\
-#                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
-#                                         alphas[m], betas[m], gammas[m]) +\
-#                  ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n],\
-#                                         betas[m], alphas[m], gammas[m]) +\
-#                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
-#                                         betas[m], alphas[m], gammas[m]))
-#            print val
-#        print '/n'
+    """Create A Matrix"""
+    a_mat = [[0.0] * NSIZE for i in xrange(NSIZE)]
+    # Iterate through matrix starting at index 0
+    for m in xrange(0, NSIZE):
+        for n in range(0, NSIZE):
+            a_mat[m][n] = float(ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n], \
+                                         alphas[m], betas[m], gammas[m]) +\
+                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
+                                         alphas[m], betas[m], gammas[m]) +\
+                  ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n],\
+                                         betas[m], alphas[m], gammas[m]) +\
+                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
+                                         betas[m], alphas[m], gammas[m]))
+        print "Done with a_mat, row", m
 
+    """Create B Matrix"""
+    b_mat = [[0.0] * NSIZE for i in xrange(NSIZE)]
+    for m in xrange(0, NSIZE):
+        for n in range(0, NSIZE):
+            alphanm = alphas[n] + alphas[m]
+            betanm = betas[n] + betas[m]
+            gammanm = gammas[n] + gammas[m]
+            b_mat[m][n] = float(8 * sym.pi**2 * (ws_physics.hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
+                                                 ws_physics.hfs_gamma(1, 1, 1, alphas[n] + betas[m], alphas[m] + betas[n], gammas[n] + gammas[m]) +
+                                                 ws_physics.hfs_gamma(1, 1, 1, alphas[m] + betas[n], alphas[n] + betas[m], gammas[n] + gammas[m]) +
+                                                 ws_physics.hfs_gamma(1, 1, 1, betas[n] + betas[m], alphas[n] + alphas[m], gammas[n] + gammas[m])))
+        print "Done with b_mat, row", m
+
+    ws_maths.eigensolve(a_mat, b_mat)
 
 def build_matrix(psis_i, psis_j, bracket_notation):
     """Generate nxn matrix by determining inner product of psi_i and psi_j

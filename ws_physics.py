@@ -276,16 +276,16 @@ def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
     betanm = beta_n + beta_m
     gammanm = gamma_n + gamma_m
 
-    innerprod = 8 * sym.pi**2 * ((-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm))) +
-                                  ((alpha_m - Z) * hfs_gamma(0, 1, 1, alphanm, betanm, gammanm)) +
-                                  ((beta_m - Z) * hfs_gamma(1, 0, 1, alphanm, betanm, gammanm)) +
-                                  ((1 + (2 * gamma_m)) * hfs_gamma(1, 1, 0, alphanm, betanm, gammanm)) -
-                                  (((gamma_m * alpha_m)/2) * hfs_gamma(2, 1, 0, alphanm, betanm, gammanm)) -
-                                  (((gamma_m * beta_m)/2) * hfs_gamma(1, 2, 0, alphanm, betanm, gammanm)) -
-                                  (((gamma_m * alpha_m)/2) * hfs_gamma(0, 1, 2, alphanm, betanm, gammanm)) -
-                                  (((gamma_m * beta_m)/2) * hfs_gamma(1, 0, 2, alphanm, betanm, gammanm)) +
-                                  (((gamma_m * alpha_m)/2) * hfs_gamma(0, 3, 0, alphanm, betanm, gammanm)) +
-                                  (((gamma_m * beta_m)/2) * hfs_gamma(3, 0, 0, alphanm, betanm, gammanm)))
+    innerprod = 8 * sym.pi**2 * (-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2)) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
+                                   ((alpha_m - Z) * hfs_gamma(0, 1, 1, alphanm, betanm, gammanm)) +
+                                   ((beta_m - Z) * hfs_gamma(1, 0, 1, alphanm, betanm, gammanm)) +
+                                   ((1 + (2 * gamma_m)) * hfs_gamma(1, 1, 0, alphanm, betanm, gammanm)) -
+                                   (((gamma_m * alpha_m)/2) * hfs_gamma(2, 1, 0, alphanm, betanm, gammanm)) -
+                                   (((gamma_m * beta_m)/2) * hfs_gamma(1, 2, 0, alphanm, betanm, gammanm)) -
+                                   (((gamma_m * alpha_m)/2) * hfs_gamma(0, 1, 2, alphanm, betanm, gammanm)) -
+                                   (((gamma_m * beta_m)/2) * hfs_gamma(1, 0, 2, alphanm, betanm, gammanm)) +
+                                   (((gamma_m * alpha_m)/2) * hfs_gamma(0, 3, 0, alphanm, betanm, gammanm)) +
+                                   (((gamma_m * beta_m)/2) * hfs_gamma(3, 0, 0, alphanm, betanm, gammanm)))
 
     return innerprod
 
@@ -300,7 +300,7 @@ def thakar_smith_param(L1, L2, num_rad):
     """
     params = []
     
-    for i in xrange(1, NSIZE):
+    for i in xrange(1, NSIZE + 1):
         # decompose number extract fractional part
         num_comps = np.modf((i*(i+1)*np.sqrt(num_rad))/2)
         frac = num_comps[0]
