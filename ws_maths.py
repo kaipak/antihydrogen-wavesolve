@@ -15,12 +15,14 @@
 """
 
 import numpy as np
+import mpmath as mpm
+import sympy as sym
 from math import sqrt
 from pprint import pprint
 from scipy import linalg, array
 from IPython.display import display
 
-PREC = 16
+PREC = 32
 
 np.set_printoptions(precision=PREC)
 
@@ -140,6 +142,10 @@ def eigensolve(mat_A, mat_B):
     print 'Coefficients: '
     print matrix_Z[0]
     
+def eigensolve2(mat_A, mat_B):
+    matrix_UT = mpm.cholesky(mat_B)
+    matrix_U  = matrix_UT.transpose()
+    print matrix_U
     
 def rand_matrix(msize):
 

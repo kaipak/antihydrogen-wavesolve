@@ -2,6 +2,7 @@ from IPython.display import display
 import numpy as np
 import scipy.misc as sc
 import sympy as sym
+import mpmath as mpm
 import itertools
 import re
 
@@ -20,7 +21,7 @@ u = r12
 
 LMN_LENGTH = 3 # determine Cartesian product for generating wave funcs.
 
-def static_params(a1, a2, b1, b2, g1, g2, eta, zed, nsize, prec=16): 
+def static_params(a1, a2, b1, b2, g1, g2, eta, zed, nsize, prec=16, dps=8): 
     """
     Globally set STATIC parameters for later function calls.  Something of
     a poor man's OOP and an effort to curtail the dreaded creep of
@@ -51,10 +52,15 @@ def static_params(a1, a2, b1, b2, g1, g2, eta, zed, nsize, prec=16):
     ETA = eta
     
     global PREC
+    global DPS
     global NSIZE
     
     NSIZE = nsize
     PREC = prec
+    DPS = dps
+
+def test():
+    return mpm.pi
 
 def hfs_gamma(l, m, n, alpha, beta, gamma):
     """
@@ -70,29 +76,29 @@ def hfs_gamma(l, m, n, alpha, beta, gamma):
     float(16,32,64,etc) -- A numerical value of the gamma function
     
     """
-
     a = alpha
     b = beta
     g = gamma
 
-    fact_coef = 2 * np.math.factorial(l) * np.math.factorial(m) \
-                * np.math.factorial(n)
+    fact_coef = mpm.mpf(2 * mpm.factorial(l) * mpm.factorial(m) \
+                * mpm.factorial(n))
         
-    x = sym.Float(a + b, PREC)
-    y = sym.Float(a + g, PREC)
-    z = sym.Float(b + g, PREC)
+    x = mpm.mpf(a + b)
+    y = mpm.mpf(a + g)
+    z = mpm.mpf(b + g)
         
-    big_gamma = sym.Mul(0)
+    #big_gamma = sym.Mul(0)
+    big_gamma = mpm.mpf(0)
     
     for l_prime in range(0,l+1):
         for m_prime in range(0,m+1):     
             for n_prime in range(0,n+1):
-                big_gamma = big_gamma + (sc.comb((m - m_prime + l_prime), l_prime) * \
-                 sc.comb((l - l_prime + n_prime), n_prime) * \
-                 sc.comb((n - n_prime + m_prime), m_prime) / \
+                big_gamma = big_gamma + (mpm.binomial((m - m_prime + l_prime), l_prime) * \
+                 mpm.binomial((l - l_prime + n_prime), n_prime) * \
+                 mpm.binomial((n - n_prime + m_prime), m_prime) / \
                 (x**(m-m_prime+l_prime+1)*y**(l-l_prime+n_prime+1)*z**(n-n_prime+m_prime+1)))
     
-    big_gamma = sym.Float(fact_coef*big_gamma, PREC)
+    big_gamma = mpm.mpf(fact_coef*big_gamma)
     
     return big_gamma
 
@@ -171,11 +177,11 @@ def extract_clmn(func1, func2, alpha, beta, gamma):
             sign = 'pos'
             continue
         if k[0] != 'r':
-            coefficient = sym.Float(re.search(r'([-+]?\d*\.\d+|\d+)', k).group(0), PREC)
+            coefficient = sym.N(re.search(r'([-+]?\d*\.\d+|\d+)', k).group(0), DPS)
         if k[0] == 'r':
             coefficient = 1
         if sign == 'neg':
-            coefficient = sym.Float(coefficient * -1, PREC)
+            coefficient = sym.N(coefficient * -1, DPS)
         # print 'coeff =', coefficient, 'L =', r1_pow, 'M =' , r2_pow, 'N =', r12_pow
         clmn.append((coefficient, r1_pow, r2_pow, r12_pow))
             
@@ -195,9 +201,9 @@ def get_qstate(bra, ket, alpha, beta, gamma):
     
     for i in clmns:
         c,l,m,n = i
-        innerprod += c * hfs_gamma(l, m, n, alpha, beta, gamma)
+        innerprod += sym.N(c * hfs_gamma(l, m, n, alpha, beta, gamma), DPS)
     
-    innerprod = sym.N(8 * sym.pi**2 * innerprod, PREC)
+    innerprod = sym.N(8 * sym.pi**2 * innerprod, DPS)
     return innerprod
     
 def gen_wavefunction(l, m, n, alpha, beta, gamma):
@@ -276,7 +282,7 @@ def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
     betanm = beta_n + beta_m
     gammanm = gamma_n + gamma_m
 
-    innerprod = 8 * sym.pi**2 * (-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2)) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
+    innerprod = sym.N(8 * sym.pi**2 * (-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2)) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
                                    ((alpha_m - Z) * hfs_gamma(0, 1, 1, alphanm, betanm, gammanm)) +
                                    ((beta_m - Z) * hfs_gamma(1, 0, 1, alphanm, betanm, gammanm)) +
                                    ((1 + (2 * gamma_m)) * hfs_gamma(1, 1, 0, alphanm, betanm, gammanm)) -
@@ -285,7 +291,7 @@ def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
                                    (((gamma_m * alpha_m)/2) * hfs_gamma(0, 1, 2, alphanm, betanm, gammanm)) -
                                    (((gamma_m * beta_m)/2) * hfs_gamma(1, 0, 2, alphanm, betanm, gammanm)) +
                                    (((gamma_m * alpha_m)/2) * hfs_gamma(0, 3, 0, alphanm, betanm, gammanm)) +
-                                   (((gamma_m * beta_m)/2) * hfs_gamma(3, 0, 0, alphanm, betanm, gammanm)))
+                                   (((gamma_m * beta_m)/2) * hfs_gamma(3, 0, 0, alphanm, betanm, gammanm))), DPS)
 
     return innerprod
 
@@ -302,9 +308,12 @@ def thakar_smith_param(L1, L2, num_rad):
     
     for i in xrange(1, NSIZE + 1):
         # decompose number extract fractional part
-        num_comps = np.modf((i*(i+1)*np.sqrt(num_rad))/2)
-        frac = num_comps[0]
-        num = ETA * (((L2 - L1)*frac) + L1)
+        # num_comps = np.modf((i*(i+1)*np.sqrt(num_rad))/2)
+        # frac = num_comps[0]
+
+        frac = mpm.mpf(((i*(i+1)*np.sqrt(num_rad))/2)%1)
+
+        num = mpm.mpf(ETA * (((L2 - L1)*frac) + L1))
         params.append(num)
     
     return params

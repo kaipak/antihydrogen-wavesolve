@@ -45,15 +45,13 @@ def main():
     
     
     # Chris Wave funcs. Base case, don't change!!
-    psis.append(ws_physics.gen_wavefunction(0, 0, 1, ALPHA, BETA, GAMMA))
     psis.append(ws_physics.gen_wavefunction(0, 2, 0, ALPHA, BETA, GAMMA))
+    psis.append(ws_physics.gen_wavefunction(0, 0, 1, ALPHA, BETA, GAMMA))
     psis.append(ws_physics.gen_wavefunction(0, 0, 0, ALPHA, BETA, GAMMA))
     psis.append(ws_physics.gen_wavefunction(1, 0, 0, ALPHA, BETA, GAMMA))
     psis.append(ws_physics.gen_wavefunction(2, 0, 0, ALPHA, BETA, GAMMA))
     psis.append(ws_physics.gen_wavefunction(0, 0, 2, ALPHA, BETA, GAMMA))
 
-    
-    
     """    
     # Pare down list to desire number of equations
     for i in xrange(0, NSIZE):

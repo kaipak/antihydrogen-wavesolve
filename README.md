@@ -24,6 +24,8 @@ motivated the creation of this code, which is involved in several experimental
 endeavors at CERN trying to find better methodologies of capturing antihydrogen ions.
 
 ## Installation
+Libraries required:
+mpmath
 
 ## API Reference
 
