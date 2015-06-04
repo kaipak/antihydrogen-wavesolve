@@ -22,52 +22,69 @@ import ws_maths
 import ws_physics
 
 # Physical parameters
-A1 = .22277
-A2 = 1.58047
-B1 = .98603
-B2 = 1.33237
-G1 = -.16261
-G2 = .76359
+
+A1 = .2480
+A2 = .8270
+B1 = .852
+B2 = 1.1260
+G1 = -.0520
+G2 = .1050
+ETA = 1 - 8.439*(10**-6)
+
+#A1 = .22277
+#A2 = 1.58047
+#B1 = .98603
+#B2 = 1.33237
+#G1 = -.16261
+#G2 = .76359
+#ETA = 1 + 1.42*(10**-9)
+
 Z  = 1
-ETA = 1 + 1.42*(10**-9)
 
 # Application attributes
-NSIZE = 4
-PREC = 64 # in bits
+NSIZE = 10
+PREC = 128 # in bits
 DPS = 256 # decimal places
 
 # set_printoptions(precision=PREC)
 
 def main():
+    time_start = timeit.default_timer()
     mpm.mp.prec = PREC
-    start_time = timeit.default_timer()
     ws_physics.static_params(A1, A2, B1, B2, G1, G2, ETA, Z, NSIZE, PREC, DPS)
     alphas = ws_physics.thakar_smith_param(A1, A2, 2)
     betas = ws_physics.thakar_smith_param(B1, B2, 3)
     gammas = ws_physics.thakar_smith_param(G1, G2, 5) 
 
     print alphas
+    print betas
+    print gammas
 
-    #sys.exit()
+
+    # sys.exit()
 
     """Create A Matrix"""
-#    a_mat = [[0.0] * NSIZE for i in xrange(NSIZE)]
-#    # Iterate through matrix starting at index 0
-#    for m in xrange(0, NSIZE):
-#        for n in range(0, NSIZE):
-#            a_mat[m][n] = ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n], \
-#                                         alphas[m], betas[m], gammas[m]) +\
-#                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
-#                                         alphas[m], betas[m], gammas[m]) +\
-#                  ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n],\
-#                                         betas[m], alphas[m], gammas[m]) +\
-#                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
-#                                         betas[m], alphas[m], gammas[m])
-#        print "Done with a_mat, row", m
-#        print a_mat[m]
+    time_matA_start = timeit.default_timer()
+    a_mat = mpm.matrix(NSIZE) 
+    # Iterate through matrix starting at index 0
+    for m in xrange(0, NSIZE):
+        for n in range(0, NSIZE):
+            a_mat[m,n] = ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n], \
+                                         alphas[m], betas[m], gammas[m]) +\
+                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
+                                         alphas[m], betas[m], gammas[m]) +\
+                  ws_physics.psif_H_psii(alphas[n], betas[n], gammas[n],\
+                                         betas[m], alphas[m], gammas[m]) +\
+                  ws_physics.psif_H_psii(betas[n], alphas[n], gammas[n], \
+                                         betas[m], alphas[m], gammas[m])
+        print "Done with a_mat, row", m
+    time_matA_end = timeit.default_timer()
+    print "A Matrix:"
+    print a_mat
+
 
     """Create B Matrix"""
-    # b_mat = [[0.0] * NSIZE for i in xrange(NSIZE)]
+    time_matB_start = timeit.default_timer()
     b_mat = mpm.matrix(NSIZE)
     for m in xrange(0, NSIZE):
         for n in range(0, NSIZE):
@@ -84,13 +101,19 @@ def main():
                                   ws_physics.hfs_gamma(1, 1, 1, betas[n] + betas[m], 
                                                        alphas[n] + alphas[m], 
                                                        gammas[n] + gammas[m])))
-            print b_mat[m, n]
         print "Done with b_mat, row", m
-
+    time_matB_end = timeit.default_timer()
+    print "B Matrix:"
     print b_mat
-    chol = mpm.cholesky(b_mat)
-    print ws_maths.eigensolve2(b_mat, b_mat)
-    #ws_maths.eigensolve(a_mat, b_mat)
+
+
+    ws_maths.eigensolve2(a_mat, b_mat)
+
+    time_end = timeit.default_timer()
+
+    print "\n\nmat_A generation time: ", time_matA_end - time_matA_start
+    print "mat_B generation time: ", time_matB_end - time_matB_start
+    print "Total execution time: ", time_end - time_start
 
 
 def build_matrix(psis_i, psis_j, bracket_notation):

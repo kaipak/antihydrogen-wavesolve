@@ -83,9 +83,9 @@ def hfs_gamma(l, m, n, alpha, beta, gamma):
     fact_coef = mpm.mpf(2 * mpm.factorial(l) * mpm.factorial(m) \
                 * mpm.factorial(n))
         
-    x = mpm.mpf(a + b)
-    y = mpm.mpf(a + g)
-    z = mpm.mpf(b + g)
+    x = mpm.mpf(2*(a + b))
+    y = mpm.mpf(2*(a + g))
+    z = mpm.mpf(2*(b + g))
         
     #big_gamma = sym.Mul(0)
     big_gamma = mpm.mpf(0)

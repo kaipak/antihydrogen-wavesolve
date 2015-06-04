@@ -17,14 +17,15 @@
 import numpy as np
 import mpmath as mpm
 import sympy as sym
+import sys
 from math import sqrt
 from pprint import pprint
 from scipy import linalg, array
 from IPython.display import display
 
-PREC = 32
+PREC = 16
 
-np.set_printoptions(precision=PREC)
+#np.set_printoptions(precision=PREC)
 
 def comb(n,r):
     """
@@ -81,7 +82,7 @@ def b_cholesky_L(matrix):
                 L[i][k] = (1.0 / L[k][k] * (matrix[i][k] - tmp_sum))
     return L
 
-def eigensolve(mat_A, mat_B):
+def eigensolve1(mat_A, mat_B):
     """
     Compute eigenvalues and eigenvectors of generalized problem A.Z = E*B.Z
     where A and B are symmetric nxn matrices and B must be positive-definite
@@ -92,42 +93,35 @@ def eigensolve(mat_A, mat_B):
     matrix_dim = len(mat_A)
     
     # B = UT.U
-    # First step is to use Cholesky decomposition to break B into U-transpose and U
-    # where U is the upper triangular component.
+    # First step is to use Cholesky decomposition to break B into 
+    # U-transpose and U where U is the upper triangular component.
     matrix_U = cholesky_U(mat_B)
     matrix_UT = matrix_U.transpose()
     
-    print matrix_U
     
     # Now get inverse of U
     matrix_UI = linalg.inv(matrix_U)
-    
+    # return matrix_UI
+
     # U inverse, transpose
     matrix_UIT = matrix_UI.transpose()
     
     # Create a matrix C = UIT.A.UI
     matrix_C = matrix_UIT.dot(mat_A).dot(matrix_UI)
-    print '\nMATRIX C'
-    display(matrix_C)
 
-    # Note: this doesn't give an array of Eigenvectors as may be expected.  Instead
+    # Note: this doesn't give an array of Eigenvectors as may be 
+    # expected.  Instead
     # gives matrix where eigenvectors are columns. Inverting so easier to do dot product
     # below.
     eigval_C, eigvec_C = linalg.eigh(matrix_C)
-    eigvec_C = eigvec_C.transpose()
-    
-    print 'EIGENVALUES'
-    display(eigval_C)
-    print '\nEIGENVECTORS'
-    display(eigvec_C)
+    # eigvec_C = eigvec_C.transpose()
+
     
     matrix_Z =  [[0.0] * matrix_dim for i in xrange(matrix_dim)]
-    print '\nUI.EigVecC'
     for i in xrange(0, matrix_dim):
-        vec_UIdotEVEC = matrix_UI.dot(eigvec_C[i])
+        vec_UIdotEVEC = matrix_UI.dot(eigvec_C[:,i])
         for j in xrange(0, matrix_dim):
             matrix_Z[i][j] = vec_UIdotEVEC[j]
-    print matrix_Z
     
     for i in xrange(0, matrix_dim):
         absmax = 0.0
@@ -138,19 +132,84 @@ def eigensolve(mat_A, mat_B):
         for j in xrange(0, matrix_dim):
             matrix_Z[i][j] = np.divide(matrix_Z[i][j], absmax)
          
-    print '\n'
-    print 'Coefficients: '
-    print matrix_Z[0]
+    print '\nEigensolve1: '
+    display(matrix_Z)
     
 def eigensolve2(mat_A, mat_B):
-    matrix_UT = mpm.cholesky(mat_B)
-    matrix_U  = matrix_UT.transpose()
-    print matrix_U
+    """Compute eigenvalues and eigenvectors: A.Z = E*B.Z
+    Refactoring of eigensolve routine.
+
+    """
+    matrix_dim = len(mat_A)
+
+    matrix_UT = mpm.cholesky(mat_B) # lower triangular T
+    matrix_U  = matrix_UT.transpose() # upper triangular
+
+    # Now get inverse of U
+    # matrix_UI = mpm.inverse(matrix_U)
+    matrix_UI = matrix_U**-1
+    # return matrix_UI
+
+    # UI Transpose
+    matrix_UIT = matrix_UI.transpose()
+
+    # mat_C = UIT*A*UI 
+    matrix_C = matrix_UIT * mat_A 
+    matrix_C *= matrix_UI
+
+    eigval_C, eigvec_C = mpm.eig(matrix_C)
+    eigval_C, eigvec_C = mpm.eig_sort(eigval_C, eigvec_C)
+
+    print 'Eigenvalues: ', eigval_C
+    print '\n\n'
+    print 'Eigenvectors:\n', eigvec_C
+
+    matrix_Z = mpm.matrix(matrix_dim)
+
+    for i in xrange(0, matrix_dim):
+        vec_UIdotEVEC = matrix_UI * eigvec_C[:,i]
+        for j in xrange(0, matrix_dim):
+            matrix_Z[i,j] = vec_UIdotEVEC[j]
+
+    matrix_Zn = mpm.matrix(matrix_dim)
+
+    for i in xrange(0, matrix_dim):
+        absmax = 0.0
+        for j in matrix_Z[i,:]:
+            if mpm.fabs(j) > mpm.fabs(absmax):
+                absmax = j
+
+        for j in xrange(0, matrix_dim):
+            matrix_Zn[i, j] = np.divide(matrix_Z[i, j], absmax)
+
+    print '\nEigensolve2: ' 
+    print matrix_Zn
+
+#    print '\nUI.EigVecC'
+#    for i in xrange(0, matrix_dim):
+#        vec_UIdotEVEC = matrix_UI.dot(eigvec_C[i])
+#        for j in xrange(0, matrix_dim):
+#            matrix_Z[i][j] = vec_UIdotEVEC[j]
+#    print matrix_Z
+#    
+#    for i in xrange(0, matrix_dim):
+#        absmax = 0.0
+#        for j in matrix_Z[i]:
+#            if np.abs(j) > np.abs(absmax):
+#                absmax = j
+#        
+#        for j in xrange(0, matrix_dim):
+#            matrix_Z[i][j] = np.divide(matrix_Z[i][j], absmax)
+#         
+#    print '\n'
+#    print 'Coefficients: '
+#    print matrix_Z[0]
     
 def rand_matrix(msize):
 
-    """
-    Generate and return a random matrix that's *almost* always positive definite
+    """Generate and return a random matrix
+
+    Matrix that's *almost* always positive definite
     and Hermitian.  Primarily for testing purposes
     
     """    
