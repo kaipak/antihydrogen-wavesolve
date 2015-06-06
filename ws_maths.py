@@ -23,10 +23,6 @@ from pprint import pprint
 from scipy import linalg, array
 from IPython.display import display
 
-PREC = 16
-
-#np.set_printoptions(precision=PREC)
-
 def comb(n,r):
     """
     Return combination of r choices from n elements.
@@ -90,6 +86,7 @@ def eigensolve1(mat_A, mat_B):
     
     Routine is borrowed from IMSL
     """
+    print '\nEigensolve1: '
     matrix_dim = len(mat_A)
     
     # B = UT.U
@@ -101,7 +98,6 @@ def eigensolve1(mat_A, mat_B):
     
     # Now get inverse of U
     matrix_UI = linalg.inv(matrix_U)
-    # return matrix_UI
 
     # U inverse, transpose
     matrix_UIT = matrix_UI.transpose()
@@ -109,14 +105,8 @@ def eigensolve1(mat_A, mat_B):
     # Create a matrix C = UIT.A.UI
     matrix_C = matrix_UIT.dot(mat_A).dot(matrix_UI)
 
-    # Note: this doesn't give an array of Eigenvectors as may be 
-    # expected.  Instead
-    # gives matrix where eigenvectors are columns. Inverting so easier to do dot product
-    # below.
     eigval_C, eigvec_C = linalg.eigh(matrix_C)
-    # eigvec_C = eigvec_C.transpose()
 
-    
     matrix_Z =  [[0.0] * matrix_dim for i in xrange(matrix_dim)]
     for i in xrange(0, matrix_dim):
         vec_UIdotEVEC = matrix_UI.dot(eigvec_C[:,i])
@@ -131,11 +121,10 @@ def eigensolve1(mat_A, mat_B):
         
         for j in xrange(0, matrix_dim):
             matrix_Z[i][j] = np.divide(matrix_Z[i][j], absmax)
+
+    print matrix_Z
          
-    print '\nEigensolve1: '
-    display(matrix_Z)
-    
-def eigensolve2(mat_A, mat_B):
+def eigensolve(mat_A, mat_B):
     """Compute eigenvalues and eigenvectors: A.Z = E*B.Z
     Refactoring of eigensolve routine.
 
@@ -158,14 +147,16 @@ def eigensolve2(mat_A, mat_B):
     matrix_C *= matrix_UI
 
     eigval_C, eigvec_C = mpm.eig(matrix_C)
-    eigval_C, eigvec_C = mpm.eig_sort(eigval_C, eigvec_C)
+    # eigval_C, eigvec_C = mpm.eig_sort(eigval_C, eigvec_C)
+    for i in xrange(0, matrix_dim):
+        if eigvec_C[0, i] < 0:
+            eigvec_C[:,i] = -eigvec_C[:,i]
 
-    print 'Eigenvalues: ', eigval_C
-    print '\n\n'
-    print 'Eigenvectors:\n', eigvec_C
+    return (matrix_UI, eigval_C, eigvec_C)
 
+def normalize_Z(matrix_UI, eigvec_C, eigval_C):
+    matrix_dim = len(matrix_UI)
     matrix_Z = mpm.matrix(matrix_dim)
-
     for i in xrange(0, matrix_dim):
         vec_UIdotEVEC = matrix_UI * eigvec_C[:,i]
         for j in xrange(0, matrix_dim):
@@ -182,29 +173,21 @@ def eigensolve2(mat_A, mat_B):
         for j in xrange(0, matrix_dim):
             matrix_Zn[i, j] = np.divide(matrix_Z[i, j], absmax)
 
-    print '\nEigensolve2: ' 
-    print matrix_Zn
+    low_E = eigval_C[0] 
+    loc  = 0
+    curr = 0
+    for eigenvalue in eigval_C:
+        if eigenvalue < low_E:
+            loc = curr
+            low_E = eigenvalue
+        curr += 1
 
-#    print '\nUI.EigVecC'
-#    for i in xrange(0, matrix_dim):
-#        vec_UIdotEVEC = matrix_UI.dot(eigvec_C[i])
-#        for j in xrange(0, matrix_dim):
-#            matrix_Z[i][j] = vec_UIdotEVEC[j]
-#    print matrix_Z
-#    
-#    for i in xrange(0, matrix_dim):
-#        absmax = 0.0
-#        for j in matrix_Z[i]:
-#            if np.abs(j) > np.abs(absmax):
-#                absmax = j
-#        
-#        for j in xrange(0, matrix_dim):
-#            matrix_Z[i][j] = np.divide(matrix_Z[i][j], absmax)
-#         
-#    print '\n'
-#    print 'Coefficients: '
-#    print matrix_Z[0]
-    
+    print "Low energy state: ", low_E
+    print "Corresponding with Matrix Z[", loc, "]: ", matrix_Zn[loc,:]
+
+    return (matrix_Zn, low_E, matrix_Zn[loc,:])
+
+
 def rand_matrix(msize):
 
     """Generate and return a random matrix

@@ -33,8 +33,8 @@ GAMMA = 0
 ZED = 1
 
 # Application attributes
-NSIZE = 4
-PREC = 128
+NSIZE = 6
+PREC = 32
 
 set_printoptions(precision=PREC)
 
@@ -77,9 +77,6 @@ def main():
     
     matrix_iHj1 = build_matrix1(psis, hamiltonians, '<i|H|j>')
     matrix_iHj2 = build_matrix2(psis, hamiltonians, '<i|H|j>')
-    print matrix_ij1
-    print '\n'
-    print matrix_iHj1
         
     matrix_iHj_time = timeit.default_timer()
     print "\n\nTime elapsed in seconds: "
@@ -89,10 +86,10 @@ def main():
     ws_maths.eigensolve1(matrix_iHj1, matrix_ij1)
     ws_maths.eigensolve2(matrix_iHj2, matrix_ij2)
 
+
     print '\n'
     #print matZ1
-    print '\nFrom eigensolve2'
-    #print matZ2
+    print '\nFrom eigensolve2' #print matZ2
     
     print '\n'
     stop_time = timeit.default_timer()

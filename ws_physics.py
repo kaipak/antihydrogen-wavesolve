@@ -51,7 +51,7 @@ def static_params(a1, a2, b1, b2, g1, g2, eta, zed, nsize, prec=16, dps=8):
     B2 = b2
     ETA = eta
     
-    global PREC
+    # global PREC
     global DPS
     global NSIZE
     
@@ -83,9 +83,9 @@ def hfs_gamma(l, m, n, alpha, beta, gamma):
     fact_coef = mpm.mpf(2 * mpm.factorial(l) * mpm.factorial(m) \
                 * mpm.factorial(n))
         
-    x = mpm.mpf(2*(a + b))
-    y = mpm.mpf(2*(a + g))
-    z = mpm.mpf(2*(b + g))
+    x = mpm.mpf(1*(a + b))
+    y = mpm.mpf(1*(a + g))
+    z = mpm.mpf(1*(b + g))
         
     #big_gamma = sym.Mul(0)
     big_gamma = mpm.mpf(0)
@@ -282,7 +282,7 @@ def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
     betanm = beta_n + beta_m
     gammanm = gamma_n + gamma_m
 
-    innerprod = sym.N(8 * sym.pi**2 * (-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2)) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
+    innerprod = mpm.mpf(8 * mpm.pi**2 * (-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2)) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
                                    ((alpha_m - Z) * hfs_gamma(0, 1, 1, alphanm, betanm, gammanm)) +
                                    ((beta_m - Z) * hfs_gamma(1, 0, 1, alphanm, betanm, gammanm)) +
                                    ((1 + (2 * gamma_m)) * hfs_gamma(1, 1, 0, alphanm, betanm, gammanm)) -
@@ -291,9 +291,38 @@ def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
                                    (((gamma_m * alpha_m)/2) * hfs_gamma(0, 1, 2, alphanm, betanm, gammanm)) -
                                    (((gamma_m * beta_m)/2) * hfs_gamma(1, 0, 2, alphanm, betanm, gammanm)) +
                                    (((gamma_m * alpha_m)/2) * hfs_gamma(0, 3, 0, alphanm, betanm, gammanm)) +
-                                   (((gamma_m * beta_m)/2) * hfs_gamma(3, 0, 0, alphanm, betanm, gammanm))), DPS)
+                                   (((gamma_m * beta_m)/2) * hfs_gamma(3, 0, 0, alphanm, betanm, gammanm))))
 
     return innerprod
+
+def thakar_smith_amat(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
+    """Generate an element of A-matrix"""
+    element = mpm.mpf(psif_H_psii(alpha_n, beta_n, gamma_n, \
+                                         alpha_m, beta_m, gamma_m) +\
+                  psif_H_psii(beta_n, alpha_n, gamma_n, \
+                                         alpha_m, beta_m, gamma_m) +\
+                  psif_H_psii(alpha_n, beta_n, gamma_n,\
+                                         beta_m, alpha_m, gamma_m) +\
+                  psif_H_psii(beta_n, alpha_n, gamma_n, \
+                                         beta_m, alpha_m, gamma_m))
+    return element
+
+def thakar_smith_bmat(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
+    """Generate an element of B-matrix"""
+    element = mpm.mpf(8 * mpm.pi**2 * 
+                                 (hfs_gamma(1, 1, 1, alpha_n + alpha_m, 
+                                                       beta_n + beta_m, 
+                                                       gamma_n + gamma_m) +
+                                  hfs_gamma(1, 1, 1, alpha_n + beta_m, 
+                                                       alpha_m + beta_n, 
+                                                       gamma_n + gamma_m) +
+                                  hfs_gamma(1, 1, 1, alpha_m + beta_n, 
+                                                       alpha_n + beta_m, 
+                                                       gamma_n + gamma_m) +
+                                  hfs_gamma(1, 1, 1, beta_n + beta_m, 
+                                                       alpha_n + alpha_m, 
+                                                       gamma_n + gamma_m))) 
+    return element
 
 def thakar_smith_param(L1, L2, num_rad):
     """ Parameter values as defined by Thakkar and Vedene H.Smith, Jr.
