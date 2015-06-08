@@ -12,8 +12,8 @@ import datetime
 import itertools
 import timeit
 import multiprocessing as mp
-# from numpy import array, matrix, linalg, pi, set_printoptions, modf
 from IPython.display import display
+import re
 import sympy as sym
 import mpmath as mpm # for matrix math in arbitrary precision
 import sys
@@ -24,13 +24,13 @@ import ws_physics
 
 # Physical parameters
 # P10
-#a1 = .2480
-#a2 = .8270
-#b1 = .852
-#b2 = 1.1260
-#g1 = -.0520
-#g2 = .1050
-#eTA = 1 - 8.439*(10**-6)
+#A1 = .2480
+#A2 = .8270
+#B1 = .852
+#B2 = 1.1260
+#G1 = -.0520
+#G2 = .1050
+#ETA = 1 - 8.439*(10**-6)
 
 ## P60
 #A1 = .1280
@@ -120,17 +120,17 @@ def main():
 
     # Output to file and display times
     f.write("Matrix UI:================================================\n")
-    f.write(str(ui_mat))
+    f.write(matrix_format(ui_mat))
     f.write("\n\nEigenvalues:==========================================\n")
-    f.write(str(eigvals))
+    f.write(matrix_format(eigvals))
     f.write("\n\nEigenvectors:=========================================\n")
-    f.write(str(eigvecs))
+    f.write(matrix_format(eigvecs))
     f.write("\n\nMatrix Zn:============================================\n")
-    f.write(str(zn_mat))
+    f.write(matrix_format(zn_mat))
     f.write("\n\nLowest Eigenvalue:====================================\n")
     f.write(str(energy))
     f.write("\n\nCorresponding Coeffs:=================================\n")
-    f.write(str(coeff))
+    f.write(matrix_format(coeff))
 
     matA_time = time_matA_end - time_matA_start
     matB_time = time_matB_end - time_matB_start
@@ -186,6 +186,21 @@ def build_matrix(psis_i, psis_j, bracket_notation):
             matrix[i+j][i] = psirow[j]
         
     return matrix
+
+def matrix_format(matrix):
+    """Change formatting to be compatible with Mathematica natively"""
+    matrix_text = str(matrix).split('\n')
+    matrix_return = ''
+    for line in matrix_text:
+        line = re.sub('\[', '{', line)
+        line = re.sub('\]', '},', line)
+        line = re.sub(r'(\.\d+)(\s+)', r'\1, ', line)
+        line = re.sub('mpf\(\'', '', line)
+        line = re.sub(r'\'\)', '', line)
+        line = re.sub(r'\,\}', '}', line)
+        line = re.sub(r'\,\'\)', ' ', line)
+        matrix_return += line + '\n'
+    return matrix_return
 
 if __name__ == '__main__':
     main()
