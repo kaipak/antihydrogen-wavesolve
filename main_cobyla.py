@@ -2,7 +2,7 @@ import wavesolve
 from scipy.optimize import fmin_cobyla
 
 def objective(args):
-    wavesolve.solve(args, 20)
+    wavesolve.solve(args, 10)
 
 def constr1(args):
     return args[0] + args[2]

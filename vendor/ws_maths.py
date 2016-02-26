@@ -1,17 +1,17 @@
 """
-    Set of math functions that'll handle linear algebra calculations for
+    Set of math functions that'll handle linear algebra calculations for 
     wavesolve.py program
-
+      
     @author Kai Pak
     @start_date January 1, 2014
     @current_version 1.1
-
-
+    
+  
     History
-
-    July 22 2014 - Separating physics wave function generation into own set of
+    
+    July 22 2014 - Separating physics wave function generation into own set of 
     functions.
-
+    
 """
 
 import mpmath as mpm
@@ -37,8 +37,8 @@ def eigensolve(mat_A, mat_B):
     # UI Transpose
     matrix_UIT = matrix_UI.transpose()
 
-    # mat_C = UIT*A*UI
-    matrix_C = matrix_UIT * mat_A
+    # mat_C = UIT*A*UI 
+    matrix_C = matrix_UIT * mat_A 
     matrix_C *= matrix_UI
 
     eigval_C, eigvec_C = mpm.eig(matrix_C)
@@ -80,6 +80,6 @@ def normalize_Z(matrix_UI, eigvec_C, eigval_C):
         curr += 1
 
     print "Low energy state: ", low_E
-    # print "Corresponding with Matrix Z[", loc, "]: ", matrix_Zn[loc,:]
+    print "Corresponding with Matrix Z[", loc, "]: ", matrix_Zn[loc,:]
 
     return (matrix_Zn, low_E, matrix_Zn[loc,:])
