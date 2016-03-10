@@ -1,18 +1,26 @@
+# Math libraries
 import wavesolve
 import mpmath as mpm
 import numpy as np
 from scipy.optimize import fmin_cobyla
-
-A1 = .2480
-A2 = .8270
-B1 = .852
-B2 = 1.1260
-G1 = -.0520
-G2 = .1050
-NSIZE = 10 # number of terms
+# System libraries
+import sys
+import datetime
+import itertools
+import timeit
+# -0.5277304493274347`+0.527730449
+iterations = 0
+PREC = 128
+A1 = mpm.mpf(.2480)
+A2 = mpm.mpf(.8270)
+B1 = mpm.mpf(.852)
+B2 = mpm.mpf(1.1260)
+G1 = mpm.mpf(-.0520)
+G2 = mpm.mpf(.1050)
+NSIZE = 100 # number of terms
 
 def objective(args):
-    wavesolve.solve(args, NSIZE)
+    return wavesolve.solve(args, NSIZE)
 
 # Calculate a coefficient
 def n_subK(L1, L2, k, rooted):
@@ -21,36 +29,29 @@ def n_subK(L1, L2, k, rooted):
     return num
 
 def get_constraints(args):
+    global iterations
+    iterations = iterations + 1
+    print 'iterations:' + str(iterations)
     constraints = []
     alpha_ks = []
     beta_ks  = []
     gamma_ks = []
     for i in xrange(1, NSIZE + 1):
-        alpha_ks.append(n_subK(A1, A2, i, 2))
-        beta_ks.append(n_subK(B1, B2, i, 3))
-        gamma_ks.append(n_subK(G1, G2, i, 5))
-
-    print alpha_ks
-    return alpha_ks
-
-
-def constr1(args):
-    return args[0] + args[2]
-
-def constr2(args):
-    return args[0] + args[4]
-
-def constr3(args):
-    return args[0] + args[4]
-
+        # alpha_k + beta_k
+        constraints.append(n_subK(args[0], args[1], i, 2) + n_subK(args[2], args[3], i, 3))
+        # alpha_k + gamma_k
+        constraints.append(n_subK(args[0], args[1], i, 2) + n_subK(args[4], args[5], i, 5))
+        # beta_k + gamma_k
+        constraints.append(n_subK(args[2], args[3], i, 3) + n_subK(args[4], args[5], i, 5))
+    return constraints
 
 def main():
-    #objective([.1490,1.199,.899,1.18,-.077,.2250])
-    #get_constraints(A1, A2, B1, B2, G1, G2)
-    cons = [constr1([.100,1.0,.899,1.0,-.077,.2250]), constr2([.100,1.0,.899,1.0,-.077,.2250])]
-    fmin_cobyla(objective, [.100,1.0,.899,1.0,-.077,.2250], get_constraints, rhoend=1e-7)
-
-
+    mpm.mp.prec = PREC
+    runtime = str(datetime.datetime.now())
+    time_start = timeit.default_timer()
+    # mpm.mp.prec = PREC
+    # filename = "cobyla_wavesolve_run" + str(NSIZE) + runtime
+    fmin_cobyla(objective, [A1,A2,B1,B2,G1,G2], get_constraints, maxfun=100000, rhobeg=.1, rhoend=1e-16)
 
 if __name__ == '__main__':
     main()

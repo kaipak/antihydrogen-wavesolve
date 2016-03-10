@@ -78,7 +78,7 @@ def solve(args, nsize):
         for n in xrange(0, len(row)):
             a_mat[m,m+n] = row[n]
             a_mat[m+n,m] = row[n]
-        # print "Done with a_mat, row", m
+        #print "Done with a_mat, row", m
     time_matA_end = timeit.default_timer()
 
 
@@ -129,7 +129,7 @@ def solve(args, nsize):
     #f.write("\n\nmat_A generation time: " + str(matA_time))
     #print "mat_B generation time: ", matB_time
     #f.write("\n\nmat_B generation time: " + str(matB_time))
-    #print "Total execution time: ", total_time
+    print "Total execution time: ", total_time
     #f.write("\n\nTotal execution time: " + str(total_time))
     #f.close()
     return energy
