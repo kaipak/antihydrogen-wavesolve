@@ -1,6 +1,7 @@
 import wavesolve
 import mpmath as mpm
 import numpy as np
+import sys
 from scipy.optimize import fmin_cobyla
 
 A1 = .2480
@@ -30,8 +31,12 @@ def get_constraints(args):
         beta_ks.append(n_subK(B1, B2, i, 3))
         gamma_ks.append(n_subK(G1, G2, i, 5))
 
-    print alpha_ks
-    return alpha_ks
+    constraints.extend(alpha_ks)
+    constraints.extend(beta_ks)
+    constraints.extend(gamma_ks)
+    for cons in constraints:
+        print cons
+    return constraints
 
 
 def constr1(args):
@@ -47,8 +52,8 @@ def constr3(args):
 def main():
     #objective([.1490,1.199,.899,1.18,-.077,.2250])
     #get_constraints(A1, A2, B1, B2, G1, G2)
-    cons = [constr1([.100,1.0,.899,1.0,-.077,.2250]), constr2([.100,1.0,.899,1.0,-.077,.2250])]
-    fmin_cobyla(objective, [.100,1.0,.899,1.0,-.077,.2250], get_constraints, rhoend=1e-7)
+    sys.exit
+    fmin_cobyla(objective, [.300,.8,.8,1.0,-.1,.1], get_constraints, rhobeg=.01, rhoend=.000001)
 
 
 
