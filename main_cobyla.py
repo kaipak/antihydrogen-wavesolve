@@ -4,12 +4,12 @@ import numpy as np
 import sys
 from scipy.optimize import fmin_cobyla
 
-A1 = .2480
-A2 = .8270
-B1 = .852
-B2 = 1.1260
-G1 = -.0520
-G2 = .1050
+A1 = .1
+A2 = .5
+B1 = .5
+B2 = 1.0
+G1 = -.1
+G2 = .1
 NSIZE = 10 # number of terms
 
 def objective(args):
