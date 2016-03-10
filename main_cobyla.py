@@ -33,13 +33,10 @@ def get_constraints(args):
         constraints.append(n_subK(args[0], args[1], i, 2) + n_subK(args[4], args[5], i, 5))
         # beta_k + gamma_k
         constraints.append(n_subK(args[2], args[3], i, 3) + n_subK(args[4], args[5], i, 5))
+    return constraints
 
 def main():
-    #objective([.1490,1.199,.899,1.18,-.077,.2250])
-    #get_constraints(A1, A2, B1, B2, G1, G2)
-    fmin_cobyla(objective, [A1,A2,B1,B2,G1,G2], get_constraints, rhobeg=.1, rhoend=.0000000000000001)
-
-
+    fmin_cobyla(objective, [A1,A2,B1,B2,G1,G2], get_constraints, rhobeg=.1, rhoend=1e-4)
 
 if __name__ == '__main__':
     main()
