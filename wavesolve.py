@@ -22,55 +22,40 @@ import sys
 import ws_maths
 import ws_physics
 
-# Physical parameters
-# P10
-A1 = .2480
-A2 = .8270
-B1 = .852
-B2 = 1.1260
-G1 = -.0520
-G2 = .1050
-ETA = 1 - 8.439*(10**-6)
-Z  = 1
 
-# Application attributes
-NSIZE = 10
-PREC = 128 # in bits
-DPS = 256 # decimal places
-
-# set_printoptions(precision=PREC)
-
-def solve(args, nsize):
+def solve(args, z_proton, eta, nsize):
+    '''
+    A1-G2 parameters passed as an array due the data type accepted by the python
+    COBYLA wrapper.
+    '''
     A1 = args[0]
     A2 = args[1]
     B1 = args[2]
     B2 = args[3]
     G1 = args[4]
     G2 = args[5]
-    NSIZE = nsize
     # Set up support stuff
     runtime = str(datetime.datetime.now())
     time_start = timeit.default_timer()
-    mpm.mp.prec = PREC
-    filename = "runwavesolve_n" + str(NSIZE) + "_prec" + str(PREC) + "_" + runtime
+    # filename = "runwavesolve_n" + str(NSIZE) + "_prec" + str(PREC) + "_" + runtime
     # f = open(filename, 'w')
 
     # Physical parameters
-    ws_physics.static_params(A1, A2, B1, B2, G1, G2, ETA, Z, NSIZE, PREC, DPS)
+    ws_physics.static_params(A1, A2, B1, B2, G1, G2, eta, z_proton, nsize)
     alphas = ws_physics.thakar_smith_param(A1, A2, 2)
     betas = ws_physics.thakar_smith_param(B1, B2, 3)
     gammas = ws_physics.thakar_smith_param(G1, G2, 5)
 
     # Create A Matrix
     time_matA_start = timeit.default_timer()
-    a_mat = mpm.matrix(NSIZE)
+    a_mat = mpm.matrix(nsize)
     # Iterate through matrix starting at index 0
-    for m in xrange(0, NSIZE):
+    for m in xrange(0, nsize):
         pool = mp.Pool(processes = None)
         rowobj = [pool.apply_async(ws_physics.thakar_smith_amat,
                                    args=(alphas[n], betas[n], gammas[n],
                                          alphas[m], betas[m], gammas[m]))
-                  for n in xrange(m, NSIZE)]
+                  for n in xrange(m, nsize)]
         row = [p.get() for p in rowobj]
         pool.terminate()
 
@@ -84,13 +69,13 @@ def solve(args, nsize):
 
     # Create B Matrix
     time_matB_start = timeit.default_timer()
-    b_mat = mpm.matrix(NSIZE)
-    for m in xrange(0, NSIZE):
+    b_mat = mpm.matrix(nsize)
+    for m in xrange(0, nsize):
         pool = mp.Pool(processes = None)
         rowobj = [pool.apply_async(ws_physics.thakar_smith_bmat,
                                    args=(alphas[n], betas[n], gammas[n],
                                          alphas[m], betas[m], gammas[m]))
-                  for n in xrange(m, NSIZE)]
+                  for n in xrange(m, nsize)]
         row = [p.get() for p in rowobj]
         pool.terminate()
 
