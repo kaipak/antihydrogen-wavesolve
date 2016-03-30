@@ -1,4 +1,4 @@
-# Math libraries
+# Math and science libraries
 import wavesolve
 import mpmath as mpm
 import numpy as np
@@ -12,20 +12,20 @@ import timeit
 
 iterations = 0
 
-# Default physical parameters modifiable by getopts.
+# Default physical parameters modifiable by argparse
 PREC       = 128
-A1         = mpm.mpf(.2480)
-A2         = mpm.mpf(.8270)
-B1         = mpm.mpf(.852)
-B2         = mpm.mpf(1.1260)
-G1         = mpm.mpf(-.0520)
-G2         = mpm.mpf(.1050)
+A1=0.67820882
+A2=0.14058198
+B1=0.63572127
+B2=1.14989192
+G1=-0.17638067
+G2=0.39904493
 NSIZE      = 1 # number of terms
 ETA        = 1 - 8.439*(10**-6)
 Z_PROTON   = 1
 
 # Options related to COBYLA function.
-MAXFUN     = 1000
+MAXFUN     = 10000
 RHOBEG     = .1
 RHOEND     = '1e-8'
 
@@ -67,11 +67,28 @@ def parse_args():
     global MAXFUN
     global RHOBEG
     global RHOEND
-    parser = argparse.ArgumentParser(description='Iteratively find \
-                                                  parallelotope parameters \
-                                                  through application of \
-                                                  COBYLA algorithm on \
-                                                  wavesolve.')
+    global A1
+    global A2
+    global B1
+    global B2
+    global G1
+    global G2
+
+    description="""Iteratively optimize parallelotope parameters through \
+    application of COBYLA algorithm that minimizes energy of wavesolve.\
+    Defaults are generally provided for each option as described below--\
+    including for the paralleltope params: \n\
+    A1=0.67820882,  A2=0.14058198\n \
+    B1=0.63572127,  B2=1.14989192\n \
+    G1=-0.17638067, G2=0.39904493\n \
+    \n\
+    Example usage:\
+    \n\
+    calculation on helium, 10000 iterations, A1-G2 defined):\n\
+    python main_cobyla.py -z 2 -m 10000 .7 .15 .65 1.2 .2 .4\n
+    """
+
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument("-z", "--protons", type=int,
                         help="Z number of atom to evaluate. Defaults to \
                               hydrogen (Z=1).")
@@ -82,15 +99,27 @@ def parse_args():
                         help="Precision of numbers used in calculations. \
                               Defaults to quadruple precision or 128 bits.")
     parser.add_argument("-m", "--maxfun", type=int,
-                        help="Maximum number of tries COBYLA will try to \
+                        help="Maximum number of tries COBYLA will attempt to \
                               minimize function before giving up.  Default \
-                              is 1000.")
+                              is 10000.")
     parser.add_argument("-b", "--rhobeg", type=float,
                         help="Initial changes in parameters COBYLA will try \
                               when minimizing.  Default is increments of .1.")
     parser.add_argument("-e", "--rhoend", type=str,
                         help="Lower bound accuracy in final solution COBYLA \
                               will produce.  Defaults to 1e-8.")
+    parser.add_argument("A1", nargs='?', type=float, \
+                        help="A1 parallelotope parameter", default = A1)
+    parser.add_argument("A2", nargs='?', type=float, \
+                        help="A2 parallelotope parameter", default = A2)
+    parser.add_argument("B1", nargs='?', type=float, \
+                        help="B1 parallelotope parameter", default = B1)
+    parser.add_argument("B2", nargs='?', type=float,
+                        help="B2 parallelotope parameter", default = B2)
+    parser.add_argument("G1", nargs='?', type=float,
+                        help="G1 parallelotope parameter", default = G1)
+    parser.add_argument("G2", nargs='?', type=float,
+                        help="G2 parallelotope parameter", default = G2)
     args = parser.parse_args()
 
     if args.protons:
@@ -105,6 +134,18 @@ def parse_args():
         RHOBEG = args.rhobeg
     if args.rhoend:
         RHOEND = args.rhoend
+    if args.A1:
+        A1 = args.A1
+    if args.A2:
+        A2 = args.A2
+    if args.B1:
+        B1 = args.B1
+    if args.B2:
+        B2 = args.B2
+    if args.G1:
+        G1 = args.G1
+    if args.G2:
+        G2 = args.G2
     # print args.accumulate(args.integers)
 
 def main():

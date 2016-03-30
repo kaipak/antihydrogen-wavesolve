@@ -12,7 +12,6 @@ import datetime
 import itertools
 import timeit
 import multiprocessing as mp
-from IPython.display import display
 import re
 import sympy as sym
 import mpmath as mpm # for matrix math in arbitrary precision
