@@ -13,8 +13,8 @@ import itertools
 import timeit
 import multiprocessing as mp
 import re
-import sympy as sym
 import mpmath as mpm # for matrix math in arbitrary precision
+import numpy as np
 import sys
 
 # Custom libraries
@@ -48,6 +48,8 @@ def solve(args, z_proton, eta, nsize):
     # Create A Matrix
     time_matA_start = timeit.default_timer()
     a_mat = mpm.matrix(nsize)
+    a_mat_np = np.zeros(shape=(nsize,nsize))
+    print a_mat_np
     # Iterate through matrix starting at index 0
     for m in xrange(0, nsize):
         pool = mp.Pool(processes = None)
@@ -60,10 +62,11 @@ def solve(args, z_proton, eta, nsize):
 
         # Now populate row and its transpose column since this is a symmetric matrix
         for n in xrange(0, len(row)):
-            a_mat[m,m+n] = row[n]
-            a_mat[m+n,m] = row[n]
+            a_mat_np[m,m+n] = row[n]
+            a_mat_np[m+n,m] = row[n]
         #print "Done with a_mat, row", m
     time_matA_end = timeit.default_timer()
+    print a_mat_np
 
 
     # Create B Matrix
@@ -85,8 +88,8 @@ def solve(args, z_proton, eta, nsize):
         #print "Done with b_mat, row", m
     time_matB_end = timeit.default_timer()
 
-    ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
-    zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)
+    #ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
+    #zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)
 
     time_end = timeit.default_timer()
 
@@ -107,7 +110,6 @@ def solve(args, z_proton, eta, nsize):
     matA_time = time_matA_end - time_matA_start
     matB_time = time_matB_end - time_matB_start
     total_time = time_end - time_start
-    print args
 
     #print "\n\nmat_A generation time: ", matA_time
     #f.write("\n\nmat_A generation time: " + str(matA_time))
@@ -116,7 +118,7 @@ def solve(args, z_proton, eta, nsize):
     print "Total execution time: ", total_time
     #f.write("\n\nTotal execution time: " + str(total_time))
     #f.close()
-    return energy
+    # return energy
 
 
 def build_matrix(psis_i, psis_j, bracket_notation):

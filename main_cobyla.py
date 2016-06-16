@@ -13,21 +13,21 @@ import timeit
 iterations = 0
 
 # Default physical parameters modifiable by argparse
-PREC       = 128
-A1=0.67820882
-A2=0.14058198
-B1=0.63572127
-B2=1.14989192
-G1=-0.17638067
-G2=0.39904493
-NSIZE      = 1 # number of terms
-ETA        = 1 - 8.439*(10**-6)
-Z_PROTON   = 1
+PREC     = 128
+A1       = 0.67820882
+A2       = 0.14058198
+B1       = 0.63572127
+B2       = 1.14989192
+G1       = -0.17638067
+G2       = 0.39904493
+NSIZE    = 1 # number of terms
+ETA      = 1 - 8.439*(10**-6)
+Z_PROTON = 1
 
 # Options related to COBYLA function.
-MAXFUN     = 10000
-RHOBEG     = .1
-RHOEND     = '1e-8'
+MAXFUN   = 10000
+RHOBEG   = .1
+RHOEND   = '1e-8'
 
 def objective(args):
     return wavesolve.solve(args, Z_PROTON, ETA, NSIZE)
