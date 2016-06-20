@@ -68,7 +68,7 @@ def hfs_gamma(l, m, n, alpha, beta, gamma):
 
     Returns:
     float(16,32,64,etc) -- A numerical value of the gamma function
-    
+
     """
     a = alpha
     b = beta
@@ -276,7 +276,7 @@ def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
     betanm = beta_n + beta_m
     gammanm = gamma_n + gamma_m
 
-    innerprod = mpm.mpf(8 * mpm.pi**2 * (-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2)) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
+    innerprod = np.longdouble(8 * np.pi**2 * (-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2)) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
                                    ((alpha_m - Z) * hfs_gamma(0, 1, 1, alphanm, betanm, gammanm)) +
                                    ((beta_m - Z) * hfs_gamma(1, 0, 1, alphanm, betanm, gammanm)) +
                                    ((1 + (2 * gamma_m)) * hfs_gamma(1, 1, 0, alphanm, betanm, gammanm)) -
@@ -291,7 +291,7 @@ def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
 
 def thakar_smith_amat(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
     """Generate an element of A-matrix"""
-    element = mpm.mpf(psif_H_psii(alpha_n, beta_n, gamma_n, \
+    element = np.longdouble(psif_H_psii(alpha_n, beta_n, gamma_n, \
                                          alpha_m, beta_m, gamma_m) +\
                   psif_H_psii(beta_n, alpha_n, gamma_n, \
                                          alpha_m, beta_m, gamma_m) +\
@@ -303,7 +303,7 @@ def thakar_smith_amat(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
 
 def thakar_smith_bmat(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
     """Generate an element of B-matrix"""
-    element = mpm.mpf(8 * mpm.pi**2 *
+    element = np.longdouble(8 * np.pi**2 *
                                  (hfs_gamma(1, 1, 1, alpha_n + alpha_m,
                                                        beta_n + beta_m,
                                                        gamma_n + gamma_m) +

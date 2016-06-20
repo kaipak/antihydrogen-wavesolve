@@ -16,8 +16,16 @@
 
 import mpmath as mpm
 import sympy as sym
+import numpy as np
+import scipy as sc
 import sys
+
 from IPython.display import display
+import timeit
+perftime = True
+
+def eigensolve_numpy(mat_A, mat_B):
+    print sc.linalg.cholesky(mat_A, lower=False)
 
 def eigensolve(mat_A, mat_B):
     """Compute eigenvalues and eigenvectors: A.Z = E*B.Z
@@ -26,22 +34,40 @@ def eigensolve(mat_A, mat_B):
     """
     matrix_dim = len(mat_A)
 
+    chol_stime = timeit.default_timer()
     matrix_UT = mpm.cholesky(mat_B) # lower triangular T
+    print "matrix_UT (cholesky): ", timeit.default_timer() - chol_stime
+    matU_stime = timeit.default_timer()
     matrix_U  = matrix_UT.transpose() # upper triangular
+    print "matrix_U (transpose): ", timeit.default_timer() - matU_stime
 
     # Now get inverse of U
     # matrix_UI = mpm.inverse(matrix_U)
+    matUI_stime = timeit.default_timer()
     matrix_UI = matrix_U**-1
-    # return matrix_UI
+    print "matrix_UI (inverse): ", timeit.default_timer() - matUI_stime
 
     # UI Transpose
+    matUIT_stime = timeit.default_timer()
     matrix_UIT = matrix_UI.transpose()
+    print "matrix_UIT (transpose): ", timeit.default_timer() - matUIT_stime
 
     # mat_C = UIT*A*UI
+    matrixmult_stime = timeit.default_timer()
     matrix_C = matrix_UIT * mat_A
     matrix_C *= matrix_UI
+    print "matrix_C (2 multiplications): ", timeit.default_timer() - matrixmult_stime
+    print matrix_C
 
+
+
+    eigsolve_stime = timeit.default_timer()
     eigval_C, eigvec_C = mpm.eig(matrix_C)
+    print "eigsolve: ", timeit.default_timer() - eigsolve_stime
+
+    eigsolve2_stime = timeit.default_timer()
+    eigval_C, eigvec_C = LA.eig(np.array(matrix_C.tolist(),dtype=np.float64))
+    print "eigsolve2: ", timeit.default_timer() - eigsolve2_stime
 
     # Normalization routine to make sure all leading column elements are
     # positive

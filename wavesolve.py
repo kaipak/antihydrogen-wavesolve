@@ -47,46 +47,15 @@ def solve(args, z_proton, eta, nsize):
 
     # Create A Matrix
     time_matA_start = timeit.default_timer()
-    a_mat = mpm.matrix(nsize)
-    a_mat_np = np.zeros(shape=(nsize,nsize))
-    print a_mat_np
-    # Iterate through matrix starting at index 0
-    for m in xrange(0, nsize):
-        pool = mp.Pool(processes = None)
-        rowobj = [pool.apply_async(ws_physics.thakar_smith_amat,
-                                   args=(alphas[n], betas[n], gammas[n],
-                                         alphas[m], betas[m], gammas[m]))
-                  for n in xrange(m, nsize)]
-        row = [p.get() for p in rowobj]
-        pool.terminate()
-
-        # Now populate row and its transpose column since this is a symmetric matrix
-        for n in xrange(0, len(row)):
-            a_mat_np[m,m+n] = row[n]
-            a_mat_np[m+n,m] = row[n]
-        #print "Done with a_mat, row", m
+    a_mat = matrix_by_thakar_smith(alphas, betas, gammas, nsize, "A")
     time_matA_end = timeit.default_timer()
-    print a_mat_np
 
 
     # Create B Matrix
     time_matB_start = timeit.default_timer()
-    b_mat = mpm.matrix(nsize)
-    for m in xrange(0, nsize):
-        pool = mp.Pool(processes = None)
-        rowobj = [pool.apply_async(ws_physics.thakar_smith_bmat,
-                                   args=(alphas[n], betas[n], gammas[n],
-                                         alphas[m], betas[m], gammas[m]))
-                  for n in xrange(m, nsize)]
-        row = [p.get() for p in rowobj]
-        pool.terminate()
-
-        # Now populate row and its transpose column since this is a symmetric matrix
-        for n in xrange(0, len(row)):
-            b_mat[m,m+n] = row[n]
-            b_mat[m+n,m] = row[n]
-        #print "Done with b_mat, row", m
+    b_mat = matrix_by_thakar_smith(alphas, betas, gammas, nsize, "B")
     time_matB_end = timeit.default_timer()
+    ws_maths.eigensolve_numpy(b_mat, b_mat)
 
     #ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
     #zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)
@@ -120,8 +89,34 @@ def solve(args, z_proton, eta, nsize):
     #f.close()
     # return energy
 
+def matrix_by_thakar_smith(alphas, betas, gammas, nsize, a_or_b):
+    """Generate A or B matrix from Thakar/Smith Method"""
+    matrix = np.zeros(shape=(nsize,nsize))
+    # Iterate through matrix starting at index 0
+    for m in xrange(0, nsize):
+        pool = mp.Pool(processes = None)
+        if a_or_b == "A":
+            rowobj = [pool.apply_async(ws_physics.thakar_smith_amat,
+                                       args=(alphas[n], betas[n], gammas[n],
+                                             alphas[m], betas[m], gammas[m]))
+                      for n in xrange(m, nsize)]
+        else:
+            rowobj = [pool.apply_async(ws_physics.thakar_smith_bmat,
+                                       args=(alphas[n], betas[n], gammas[n],
+                                             alphas[m], betas[m], gammas[m]))
+                      for n in xrange(m, nsize)]
+        row = [p.get() for p in rowobj]
+        pool.terminate()
 
-def build_matrix(psis_i, psis_j, bracket_notation):
+        # Now populate row and its transpose column since this is a symmetric matrix
+        for n in xrange(0, len(row)):
+            matrix[m,m+n] = row[n]
+            matrix[m+n,m] = row[n]
+        print "Done with a_mat, row", m
+    return matrix
+
+
+def matrix_by_inner_prod(psis_i, psis_j, bracket_notation):
     """Generate nxn matrix by determining inner product of psi_i and psi_j
 
     Keyword arguments:
