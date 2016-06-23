@@ -25,7 +25,19 @@ import timeit
 perftime = True
 
 def eigensolve_numpy(mat_A, mat_B):
-    print sc.linalg.cholesky(mat_A, lower=False)
+    matrix_UT  = sc.linalg.cholesky(mat_B)
+    matrix_U   = matrix_UT.transpose()
+    matrix_UI  = sc.linalg.inv(matrix_U)
+    matrix_UIT = matrix_UI.transpose()
+    matrix_C   = matrix_UIT * mat_A
+    matrix_C  *= matrix_UI
+
+    eigsolve_stime = timeit.default_timer()
+    la, v      = sc.linalg.eig(matrix_C)
+    print "eigsolve: ", timeit.default_timer() - eigsolve_stime
+    print v
+    for eigenvalue in la:
+        print eigenvalue
 
 def eigensolve(mat_A, mat_B):
     """Compute eigenvalues and eigenvectors: A.Z = E*B.Z

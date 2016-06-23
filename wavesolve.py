@@ -55,7 +55,8 @@ def solve(args, z_proton, eta, nsize):
     time_matB_start = timeit.default_timer()
     b_mat = matrix_by_thakar_smith(alphas, betas, gammas, nsize, "B")
     time_matB_end = timeit.default_timer()
-    ws_maths.eigensolve_numpy(b_mat, b_mat)
+    print b_mat
+    ws_maths.eigensolve_numpy(a_mat, b_mat)
 
     #ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
     #zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)
@@ -91,7 +92,8 @@ def solve(args, z_proton, eta, nsize):
 
 def matrix_by_thakar_smith(alphas, betas, gammas, nsize, a_or_b):
     """Generate A or B matrix from Thakar/Smith Method"""
-    matrix = np.zeros(shape=(nsize,nsize))
+    matrix = np.zeros(dtype=np.longdouble, shape=(nsize,nsize))
+    print 'made it here'
     # Iterate through matrix starting at index 0
     for m in xrange(0, nsize):
         pool = mp.Pool(processes = None)

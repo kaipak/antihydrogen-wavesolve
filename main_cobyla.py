@@ -14,12 +14,12 @@ iterations = 0
 
 # Default physical parameters modifiable by argparse
 PREC     = 128
-A1       = 0.67820882
-A2       = 0.14058198
-B1       = 0.63572127
-B2       = 1.14989192
-G1       = -0.17638067
-G2       = 0.39904493
+A1       = 0.2480
+A2       = 0.8270
+B1       = 0.852
+B2       = 1.1260
+G1       = -0.0520
+G2       = 0.1050
 NSIZE    = 1 # number of terms
 ETA      = 1 - 8.439*(10**-6)
 Z_PROTON = 1

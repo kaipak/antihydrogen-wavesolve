@@ -1,6 +1,6 @@
 from IPython.display import display
 import numpy as np
-import scipy.misc as sc
+import scipy as sc
 import sympy as sym
 import mpmath as mpm
 import itertools
@@ -10,9 +10,9 @@ r1 = sym.Symbol('r1')
 r2 = sym.Symbol('r2')
 r12 = sym.Symbol('r12')
 
-alpha = sym.Symbol('alpha')
-beta = sym.Symbol('beta')
-gamma = sym.Symbol('gamma')
+#jalpha = sym.Symbol('alpha')
+#beta = sym.Symbol('beta')
+#gamma = sym.Symbol('gamma')
 
 # Hylleras coordinate stuff (transform later?)
 s = r1 + r2
@@ -74,26 +74,23 @@ def hfs_gamma(l, m, n, alpha, beta, gamma):
     b = beta
     g = gamma
 
-    fact_coef = mpm.mpf(2 * mpm.factorial(l) * mpm.factorial(m) \
+    fact_coef = np.longdouble(2 * mpm.factorial(l) * mpm.factorial(m) \
                 * mpm.factorial(n))
-
-    x = mpm.mpf(1*(a + b))
-    y = mpm.mpf(1*(a + g))
-    z = mpm.mpf(1*(b + g))
+    x = np.longdouble(1*(a + b))
+    y = np.longdouble(1*(a + g))
+    z = np.longdouble(1*(b + g))
 
     #big_gamma = sym.Mul(0)
-    big_gamma = mpm.mpf(0)
+    big_gamma = np.longdouble(0)
 
     for l_prime in range(0,l+1):
         for m_prime in range(0,m+1):
             for n_prime in range(0,n+1):
-                big_gamma = big_gamma + (mpm.binomial((m - m_prime + l_prime), l_prime) * \
-                 mpm.binomial((l - l_prime + n_prime), n_prime) * \
-                 mpm.binomial((n - n_prime + m_prime), m_prime) / \
-                (x**(m-m_prime+l_prime+1)*y**(l-l_prime+n_prime+1)*z**(n-n_prime+m_prime+1)))
-
-    big_gamma = mpm.mpf(fact_coef*big_gamma)
-
+                big_gamma = big_gamma + (sc.special.binom((m - m_prime + l_prime), l_prime) * \
+                 sc.special.binom((l - l_prime + n_prime), n_prime) * \
+                 sc.special.binom((n - n_prime + m_prime), m_prime) / \
+                 (x**(m-m_prime+l_prime+1)*y**(l-l_prime+n_prime+1)*z**(n-n_prime+m_prime+1)))
+    big_gamma = fact_coef*big_gamma
     return big_gamma
 
 def extract_clmn(func1, func2, alpha, beta, gamma):
@@ -272,9 +269,15 @@ def hamiltonian_r(wfunc, alpha, beta, gamma):
 def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
     """Return innner product of <psi_f| H | psi_i>"""
 
-    alphanm = alpha_n + alpha_m
-    betanm = beta_n + beta_m
-    gammanm = gamma_n + gamma_m
+    alpha_n = np.longdouble(alpha_n)
+    beta_n  = np.longdouble(beta_n)
+    gamma_n = np.longdouble(gamma_n)
+    alpha_m = np.longdouble(alpha_m)
+    beta_m = np.longdouble(beta_m)
+    gamma_m = np.longdouble(gamma_m)
+    alphanm = np.longdouble(alpha_n + alpha_m)
+    betanm  = np.longdouble(beta_n + beta_m)
+    gammanm = np.longdouble(gamma_n + gamma_m)
 
     innerprod = np.longdouble(8 * np.pi**2 * (-.5 * (alpha_m**2 + beta_m**2 + (2*gamma_m**2)) * hfs_gamma(1, 1, 1, alphanm, betanm, gammanm) +
                                    ((alpha_m - Z) * hfs_gamma(0, 1, 1, alphanm, betanm, gammanm)) +
@@ -287,7 +290,9 @@ def psif_H_psii(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
                                    (((gamma_m * alpha_m)/2) * hfs_gamma(0, 3, 0, alphanm, betanm, gammanm)) +
                                    (((gamma_m * beta_m)/2) * hfs_gamma(3, 0, 0, alphanm, betanm, gammanm))))
 
+
     return innerprod
+
 
 def thakar_smith_amat(alpha_n, beta_n, gamma_n, alpha_m, beta_m, gamma_m):
     """Generate an element of A-matrix"""
@@ -334,9 +339,9 @@ def thakar_smith_param(L1, L2, num_rad):
         # num_comps = np.modf((i*(i+1)*np.sqrt(num_rad))/2)
         # frac = num_comps[0]
 
-        frac = mpm.mpf(((i*(i+1)*np.sqrt(num_rad))/2)%1)
+        frac = np.longdouble(((i*(i+1)*np.sqrt(num_rad))/2)%1)
 
-        num = mpm.mpf(ETA * (((L2 - L1)*frac) + L1))
+        num = np.longdouble(ETA * (((L2 - L1)*frac) + L1))
         params.append(num)
 
     return params
