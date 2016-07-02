@@ -33,8 +33,9 @@ def eigensolve(mat_A, mat_B):
     matrix_U  = matrix_UT.transpose() # upper triangular
     #print "U Matrix \n", matrix_U
     # Now get inverse of U
-    # matrix_UI = mpm.inverse(matrix_U)
+    matUI_stime = timeit.default_timer()
     matrix_UI = matrix_U**-1
+    print "matrix_UI (inverse): ", timeit.default_timer() - matUI_stime
     #print "UI Matrix \n", matrix_UI
     # return matrix_UI
 
@@ -43,9 +44,11 @@ def eigensolve(mat_A, mat_B):
     #print "UIT Matrix \n", matrix_UIT
 
     # mat_C = UIT*A*UI
+    matrixmult_stime = timeit.default_timer()
     matrix_C = matrix_UIT * mat_A
     #print "C Matrix \n", matrix_C
     matrix_C *= matrix_UI
+    print "matrix_C (2 multiplications): ", timeit.default_timer() - matrixmult_stime
     #print "C Matrix \n", matrix_C
 
     # eigval_C, eigvec_C = mpm.eig(matrix_C)
@@ -54,14 +57,16 @@ def eigensolve(mat_A, mat_B):
     print '===========================NP CONVERSION==========================='
     np_matrix = sc.zeros(dtype=sc.longdouble, shape=(matrix_dim,matrix_dim))
 
+    copy_stime = timeit.default_timer()
     for i in range(0,matrix_C.rows):
         for j in range(0,matrix_C.cols):
             np_matrix[i,j] = matrix_C[i,j]
+    print "copy to numpy matrix: ", timeit.default_timer() - copy_stime
 
     eigsolve_stime = timeit.default_timer()
     eigval, eigvec = sc.linalg.eig(np_matrix)
     print "eigsolve: ", timeit.default_timer() - eigsolve_stime
-    print eigval, eigvec
+    # print eigval, eigvec
 
     low_E = eigval[0]
     for value in eigval:
