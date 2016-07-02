@@ -87,8 +87,10 @@ def solve(args, z_proton, eta, nsize):
     print "A Matrix\n", a_mat
     print "B Matrix\n", b_mat
 
-    ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
-    zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)
+    #ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
+    #zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)
+
+    ws_maths.eigensolve(a_mat, b_mat)
 
     time_end = timeit.default_timer()
 
@@ -118,7 +120,7 @@ def solve(args, z_proton, eta, nsize):
     print "Total execution time: ", total_time
     #f.write("\n\nTotal execution time: " + str(total_time))
     #f.close()
-    return energy
+    #return energy
 
 
 def build_matrix(psis_i, psis_j, bracket_notation):

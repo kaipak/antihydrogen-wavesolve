@@ -1,6 +1,6 @@
 # Math and science libraries
 import wavesolve
-# import mpmath as mpm
+import mpmath as mpm
 import numpy as np
 from scipy.optimize import fmin_cobyla
 # System libraries
@@ -20,12 +20,12 @@ B1       = 0.63572127
 B2       = 1.14989192
 G1       = -0.17638067
 G2       = 0.39904493
-NSIZE    = 4 # number of terms
+NSIZE    = 100 # number of terms
 ETA      = 1 - 8.439*(10**-6)
 Z_PROTON = 1
 
 def main():
-    #mpm.mp.prec = PREC
+    mpm.mp.prec = PREC
     runtime = str(datetime.datetime.now())
     time_start = timeit.default_timer()
     # filename = "cobyla_wavesolve_run" + str(NSIZE) + runtime

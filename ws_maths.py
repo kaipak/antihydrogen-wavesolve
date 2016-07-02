@@ -15,8 +15,10 @@
 """
 
 import mpmath as mpm
-import sympy as sym
+# import sympy as sym
+import scipy as sc
 import sys
+import timeit
 from IPython.display import display
 
 def eigensolve(mat_A, mat_B):
@@ -27,35 +29,59 @@ def eigensolve(mat_A, mat_B):
     matrix_dim = len(mat_A)
 
     matrix_UT = mpm.cholesky(mat_B) # lower triangular T
-    print "UT Matrix \n", matrix_UT
+    # print "UT Matrix \n", matrix_UT
     matrix_U  = matrix_UT.transpose() # upper triangular
-    print "U Matrix \n", matrix_U
+    #print "U Matrix \n", matrix_U
     # Now get inverse of U
     # matrix_UI = mpm.inverse(matrix_U)
     matrix_UI = matrix_U**-1
-    print "UI Matrix \n", matrix_UI.dtype
+    #print "UI Matrix \n", matrix_UI
     # return matrix_UI
 
     # UI Transpose
     matrix_UIT = matrix_UI.transpose()
-    print "UIT Matrix \n", matrix_UIT
+    #print "UIT Matrix \n", matrix_UIT
 
     # mat_C = UIT*A*UI
     matrix_C = matrix_UIT * mat_A
-    print "C Matrix \n", matrix_C
+    #print "C Matrix \n", matrix_C
     matrix_C *= matrix_UI
-    print "C Matrix \n", matrix_C
+    #print "C Matrix \n", matrix_C
 
-    eigval_C, eigvec_C = mpm.eig(matrix_C)
-    print eigval_C, eigvec_C
+    # eigval_C, eigvec_C = mpm.eig(matrix_C)
+
+    # Convert to numpy matrix for solving
+    print '===========================NP CONVERSION==========================='
+    np_matrix = sc.zeros(dtype=sc.longdouble, shape=(matrix_dim,matrix_dim))
+
+    for i in range(0,matrix_C.rows):
+        for j in range(0,matrix_C.cols):
+            np_matrix[i,j] = matrix_C[i,j]
+
+    eigsolve_stime = timeit.default_timer()
+    eigval, eigvec = sc.linalg.eig(np_matrix)
+    print "eigsolve: ", timeit.default_timer() - eigsolve_stime
+    print eigval, eigvec
+
+    low_E = eigval[0]
+    for value in eigval:
+        if value < low_E:
+            low_E = value
+
+    print '\n\n Lowest Eigenvalue'
+    print low_E
+
+
+
+
 
     # Normalization routine to make sure all leading column elements are
     # positive
-    for i in xrange(0, matrix_dim):
-        if eigvec_C[0, i] < 0:
-            eigvec_C[:,i] = -eigvec_C[:,i]
+    #for i in xrange(0, matrix_dim):
+    #    if eigvec_C[0, i] < 0:
+    #        eigvec_C[:,i] = -eigvec_C[:,i]
 
-    return (matrix_UI, eigval_C, eigvec_C)
+    #return (matrix_UI, eigval_C, eigvec_C)
 
 def normalize_Z(matrix_UI, eigvec_C, eigval_C):
     matrix_dim = len(matrix_UI)
