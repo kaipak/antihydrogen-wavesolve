@@ -27,21 +27,27 @@ def eigensolve(mat_A, mat_B):
     matrix_dim = len(mat_A)
 
     matrix_UT = mpm.cholesky(mat_B) # lower triangular T
+    print "UT Matrix \n", matrix_UT
     matrix_U  = matrix_UT.transpose() # upper triangular
-
+    print "U Matrix \n", matrix_U
     # Now get inverse of U
     # matrix_UI = mpm.inverse(matrix_U)
     matrix_UI = matrix_U**-1
+    print "UI Matrix \n", matrix_UI.dtype
     # return matrix_UI
 
     # UI Transpose
     matrix_UIT = matrix_UI.transpose()
+    print "UIT Matrix \n", matrix_UIT
 
     # mat_C = UIT*A*UI
     matrix_C = matrix_UIT * mat_A
+    print "C Matrix \n", matrix_C
     matrix_C *= matrix_UI
+    print "C Matrix \n", matrix_C
 
     eigval_C, eigvec_C = mpm.eig(matrix_C)
+    print eigval_C, eigvec_C
 
     # Normalization routine to make sure all leading column elements are
     # positive

@@ -62,7 +62,7 @@ def solve(args, z_proton, eta, nsize):
         for n in xrange(0, len(row)):
             a_mat[m,m+n] = row[n]
             a_mat[m+n,m] = row[n]
-        #print "Done with a_mat, row", m
+        print "Done with a_mat, row", m
     time_matA_end = timeit.default_timer()
 
 
@@ -82,8 +82,10 @@ def solve(args, z_proton, eta, nsize):
         for n in xrange(0, len(row)):
             b_mat[m,m+n] = row[n]
             b_mat[m+n,m] = row[n]
-        #print "Done with b_mat, row", m
+        print "Done with b_mat, row", m
     time_matB_end = timeit.default_timer()
+    print "A Matrix\n", a_mat
+    print "B Matrix\n", b_mat
 
     ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
     zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)
