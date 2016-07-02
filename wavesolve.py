@@ -55,8 +55,11 @@ def solve(args, z_proton, eta, nsize):
     time_matB_start = timeit.default_timer()
     b_mat = matrix_by_thakar_smith(alphas, betas, gammas, nsize, "B")
     time_matB_end = timeit.default_timer()
-    print b_mat
-    ws_maths.eigensolve_numpy(a_mat, b_mat)
+    print "A Matrix\n", a_mat
+    print "B Matrix\n", b_mat
+    ws_maths.eigentest(a_mat, b_mat)
+    exit
+    # ws_maths.eigensolve_numpy(a_mat, b_mat)
 
     #ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
     #zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)

@@ -24,13 +24,35 @@ from IPython.display import display
 import timeit
 perftime = True
 
+def eigentest(mat_A, mat_B):
+    print "B Matrix\n", mat_B
+    print "B Matrix\n", mat_B.dtype
+    mat_BI = sc.linalg.inv(mat_B)
+    mat_H  = mat_A.dot(mat_BI)
+    print "H Matrix\n", mat_H.dtype
+    la, v  = sc.linalg.eig(mat_H.astype(np.float64))
+    print v
+    for eigenvalue in la:
+        print eigenvalue
+    exit
+
 def eigensolve_numpy(mat_A, mat_B):
-    matrix_UT  = sc.linalg.cholesky(mat_B)
+    ident, lower, upper = sc.linalg.lu(mat_B)
+    print "ALU Matrix \n", lower, upper
+    matrix_UT  = sc.linalg.cholesky(mat_B, lower=True)
+    #matrix_UT = lower
+    #print "Chol Matrix \n", matrix_chol
+    print "UT Matrix \n", matrix_UT
     matrix_U   = matrix_UT.transpose()
+    print "U Matrix \n", matrix_U
     matrix_UI  = sc.linalg.inv(matrix_U)
+    print "UI Matrix \n", matrix_UI
     matrix_UIT = matrix_UI.transpose()
-    matrix_C   = matrix_UIT * mat_A
-    matrix_C  *= matrix_UI
+    print "UIT Matrix \n", matrix_UIT
+    matrix_C = matrix_UIT.dot(mat_A)
+    print "C Matrix \n", matrix_C
+    matrix_C = matrix_C.dot(matrix_UI)
+    print "C Matrix \n", matrix_C
 
     eigsolve_stime = timeit.default_timer()
     la, v      = sc.linalg.eig(matrix_C)

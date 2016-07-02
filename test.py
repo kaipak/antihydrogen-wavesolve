@@ -13,14 +13,14 @@ import timeit
 iterations = 0
 
 # Default physical parameters modifiable by argparse
-A1       = np.longdouble(0.22277)
-A2       = np.longdouble(1.58047)
-B1       = np.longdouble(0.98603)
-B2       = np.longdouble(1.33237)
-G1       = np.longdouble(-0.16261)
-G2       = np.longdouble(0.76359)
-NSIZE    = 8 # number of terms
-ETA      = np.longdouble(1 + 1.42*(10**-9))
+A1       = 0.67820882
+A2       = 0.14058198
+B1       = 0.63572127
+B2       = 1.14989192
+G1       = -0.17638067
+G2       = 0.39904493
+NSIZE    = 32 # number of terms
+ETA      = 1 - 8.439*(10**-6)
 Z_PROTON = 1
 
 def main():
