@@ -21,6 +21,41 @@ import sys
 import timeit
 from IPython.display import display
 
+def eigensolve_numpy(mat_A, mat_B):
+    matrix_dim = len(mat_A)
+    mat_A_np   = sc.zeros(dtype=sc.longdouble, shape=(matrix_dim,matrix_dim))
+    mat_B_np   = sc.zeros(dtype=sc.longdouble, shape=(matrix_dim,matrix_dim))
+
+    for i in range(0,mat_A.rows):
+        for j in range(0,mat_A.cols):
+            mat_A_np[i,j] = mat_A[i,j]
+            mat_B_np[i,j] = mat_B[i,j]
+
+    matrix_UT  = sc.linalg.cholesky(mat_B_np, lower=True)
+    print "UT Matrix \n", matrix_UT
+    matrix_U   = matrix_UT.transpose()
+    print "U Matrix \n", matrix_U
+    matrix_UI  = sc.linalg.inv(matrix_U)
+    print "UI Matrix \n", matrix_UI
+    matrix_UIT = matrix_UI.transpose()
+    print "UIT Matrix \n", matrix_UIT
+    matrix_C = matrix_UIT.dot(mat_A_np)
+    print "C Matrix \n", matrix_C
+    matrix_C = matrix_C.dot(matrix_UI)
+    print "C Matrix \n", matrix_C
+
+    eigsolve_stime = timeit.default_timer()
+    eigval, v      = sc.linalg.eig(matrix_C)
+    print "eigsolve: ", timeit.default_timer() - eigsolve_stime
+
+    low_E = eigval[0]
+    for value in eigval:
+        if value < low_E:
+            low_E = value
+
+    print '\n\n Lowest Eigenvalue'
+    print low_E
+
 def eigensolve(mat_A, mat_B):
     """Compute eigenvalues and eigenvectors: A.Z = E*B.Z
     Refactoring of eigensolve routine.
