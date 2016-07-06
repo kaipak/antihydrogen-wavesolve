@@ -90,7 +90,8 @@ def solve(args, z_proton, eta, nsize):
     #ui_mat, eigvals, eigvecs = ws_maths.eigensolve(a_mat, b_mat)
     #zn_mat, energy, coeff    = ws_maths.normalize_Z(ui_mat, eigvecs, eigvals)
 
-    ws_maths.eigensolve_numpy(a_mat, b_mat)
+    # ws_maths.eigensolve_numpy(a_mat, b_mat)
+    ws_maths.eigensolve(a_mat, b_mat)
 
     time_end = timeit.default_timer()
 

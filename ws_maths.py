@@ -21,19 +21,43 @@ import sys
 import timeit
 from IPython.display import display
 
+def matrix_mpmath_2_numpy(matrix_mpm):
+    """Transform mpmath matrix into numpy equivelent with longdouble as datatype
+    """
+    matrix_dim = len(matrix_mpm)
+    matrix_np   = sc.zeros(dtype=sc.longdouble, shape=(matrix_dim,matrix_dim))
+
+    for i in range(0, matrix_mpm.rows):
+        for j in range(0, matrix_mpm.cols):
+            matrix_np[i,j] = matrix_mpm[i,j]
+
+    return matrix_np
+
+def fixmul(A, B, prec=128):
+    m = A.rows; p = B.rows; n = B.cols;
+    A = [[A[i,j].to_fixed(prec) for j in range(p)] for i in range(m)]
+    B = [[B[i,j].to_fixed(prec) for j in range(n)] for i in range(p)]
+    C = [([0] * n) for r in range(m)]
+    for i in range(m):
+        for j in range(n):
+            s = 0
+            for k in range(p):
+                s += A[i][k] * B[k][j]
+            C[i][j] = s
+    return mpm.matrix(C) * mpm.mpf(2)**(-2*prec)
+
+
 def eigensolve_numpy(mat_A, mat_B):
-    matrix_dim = len(mat_A)
-    mat_A_np   = sc.zeros(dtype=sc.longdouble, shape=(matrix_dim,matrix_dim))
-    mat_B_np   = sc.zeros(dtype=sc.longdouble, shape=(matrix_dim,matrix_dim))
+    mat_A_np =  matrix_mpmath_2_numpy(mat_A)
 
-    for i in range(0,mat_A.rows):
-        for j in range(0,mat_A.cols):
-            mat_A_np[i,j] = mat_A[i,j]
-            mat_B_np[i,j] = mat_B[i,j]
-
-    matrix_UT  = sc.linalg.cholesky(mat_B_np, lower=True)
-    print "UT Matrix \n", matrix_UT
-    matrix_U   = matrix_UT.transpose()
+    # matrix_LT  = sc.linalg.cholesky(mat_B_np, lower=True)
+    # Need to continue using mpmath values for positive definiteness in
+    # matrix for Cholesky step
+    print "yiss?"
+    matrix_LT = mpm.cholesky(mat_B)
+    matrix_LT_np = matrix_mpmath_2_numpy(matrix_LT)
+    print "UT Matrix \n", matrix_LT_np
+    matrix_U   = matrix_LT_np.transpose()
     print "U Matrix \n", matrix_U
     matrix_UI  = sc.linalg.inv(matrix_U)
     print "UI Matrix \n", matrix_UI
@@ -80,9 +104,11 @@ def eigensolve(mat_A, mat_B):
 
     # mat_C = UIT*A*UI
     matrixmult_stime = timeit.default_timer()
-    matrix_C = matrix_UIT * mat_A
+    #matrix_C = matrix_UIT * mat_A
+    matrix_C = fixmul(matrix_UIT, mat_A)
     #print "C Matrix \n", matrix_C
-    matrix_C *= matrix_UI
+    #matrix_C *= matrix_UI
+    matrix_C = fixmul(matrix_C, matrix_UI)
     print "matrix_C (2 multiplications): ", timeit.default_timer() - matrixmult_stime
     #print "C Matrix \n", matrix_C
 
