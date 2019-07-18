@@ -236,20 +236,20 @@ def make_waves(iterables):
     lower_bound = 0
 
     """
-    for i in xrange(0, iterables):
+    for i in range(0, iterables):
         for j in list(itertools.product(range(0,i), repeat = LMN_LENGTH)):
             if j not in lmn_values:
                 lmn_values.append(j)
     """
     for i in list(itertools.product(range(0,iterables), repeat = LMN_LENGTH)):
         l,m,n = i
-        print i
+        print(i)
         wave_equations.append(gen_wavefunction(l,m,n))
 
     """
     for i in lmn_values:
         l,m,n = i
-        print i
+        print(i)
         wave_equations.append(gen_wavefunction(l,m,n))
     """
 
@@ -329,7 +329,7 @@ def thakar_smith_param(L1, L2, num_rad):
     """
     params = []
 
-    for i in xrange(1, NSIZE + 1):
+    for i in range(1, NSIZE + 1):
         # decompose number extract fractional part
         # num_comps = np.modf((i*(i+1)*np.sqrt(num_rad))/2)
         # frac = num_comps[0]

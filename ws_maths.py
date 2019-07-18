@@ -45,7 +45,7 @@ def eigensolve(mat_A, mat_B):
 
     # Normalization routine to make sure all leading column elements are
     # positive
-    for i in xrange(0, matrix_dim):
+    for i in range(0, matrix_dim):
         if eigvec_C[0, i] < 0:
             eigvec_C[:,i] = -eigvec_C[:,i]
 
@@ -54,20 +54,20 @@ def eigensolve(mat_A, mat_B):
 def normalize_Z(matrix_UI, eigvec_C, eigval_C):
     matrix_dim = len(matrix_UI)
     matrix_Z = mpm.matrix(matrix_dim)
-    for i in xrange(0, matrix_dim):
+    for i in range(0, matrix_dim):
         vec_UIdotEVEC = matrix_UI * eigvec_C[:,i]
-        for j in xrange(0, matrix_dim):
+        for j in range(0, matrix_dim):
             matrix_Z[i,j] = vec_UIdotEVEC[j]
 
     matrix_Zn = mpm.matrix(matrix_dim)
 
-    for i in xrange(0, matrix_dim):
+    for i in range(0, matrix_dim):
         absmax = 0.0
         for j in matrix_Z[i,:]:
             if mpm.fabs(j) > mpm.fabs(absmax):
                 absmax = j
 
-        for j in xrange(0, matrix_dim):
+        for j in range(0, matrix_dim):
             matrix_Zn[i, j] = mpm.fdiv(matrix_Z[i, j], absmax)
 
     low_E = mpm.mpf(eigval_C[0] )
@@ -79,7 +79,7 @@ def normalize_Z(matrix_UI, eigvec_C, eigval_C):
             low_E = eigenvalue
         curr += 1
 
-    print "Low energy state: ", low_E
+    print("Low energy state: ", low_E)
     # print "Corresponding with Matrix Z[", loc, "]: ", matrix_Zn[loc,:]
 
     return (matrix_Zn, low_E, matrix_Zn[loc,:])

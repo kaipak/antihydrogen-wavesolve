@@ -41,12 +41,12 @@ def n_subK(L1, L2, k, rooted):
 def get_constraints(args):
     global iterations
     iterations = iterations + 1
-    print 'iterations:' + str(iterations)
+    print('iterations:' + str(iterations))
     constraints = []
     alpha_ks = []
     beta_ks  = []
     gamma_ks = []
-    for i in xrange(1, NSIZE + 1):
+    for i in range(1, NSIZE + 1):
         # alpha_k + beta_k
         constraints.append(n_subK(args[0], args[1], i, 2) + \
                            n_subK(args[2], args[3], i, 3))

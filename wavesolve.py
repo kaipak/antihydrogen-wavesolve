@@ -49,17 +49,17 @@ def solve(args, z_proton, eta, nsize):
     time_matA_start = timeit.default_timer()
     a_mat = mpm.matrix(nsize)
     # Iterate through matrix starting at index 0
-    for m in xrange(0, nsize):
+    for m in range(0, nsize):
         pool = mp.Pool(processes = None)
         rowobj = [pool.apply_async(ws_physics.thakar_smith_amat,
                                    args=(alphas[n], betas[n], gammas[n],
                                          alphas[m], betas[m], gammas[m]))
-                  for n in xrange(m, nsize)]
+                  for n in range(m, nsize)]
         row = [p.get() for p in rowobj]
         pool.terminate()
 
         # Now populate row and its transpose column since this is a symmetric matrix
-        for n in xrange(0, len(row)):
+        for n in range(0, len(row)):
             a_mat[m,m+n] = row[n]
             a_mat[m+n,m] = row[n]
         #print "Done with a_mat, row", m
@@ -69,17 +69,17 @@ def solve(args, z_proton, eta, nsize):
     # Create B Matrix
     time_matB_start = timeit.default_timer()
     b_mat = mpm.matrix(nsize)
-    for m in xrange(0, nsize):
+    for m in range(0, nsize):
         pool = mp.Pool(processes = None)
         rowobj = [pool.apply_async(ws_physics.thakar_smith_bmat,
                                    args=(alphas[n], betas[n], gammas[n],
                                          alphas[m], betas[m], gammas[m]))
-                  for n in xrange(m, nsize)]
+                  for n in range(m, nsize)]
         row = [p.get() for p in rowobj]
         pool.terminate()
 
         # Now populate row and its transpose column since this is a symmetric matrix
-        for n in xrange(0, len(row)):
+        for n in range(0, len(row)):
             b_mat[m,m+n] = row[n]
             b_mat[m+n,m] = row[n]
         #print "Done with b_mat, row", m
@@ -107,13 +107,13 @@ def solve(args, z_proton, eta, nsize):
     matA_time = time_matA_end - time_matA_start
     matB_time = time_matB_end - time_matB_start
     total_time = time_end - time_start
-    print args
+    print(args)
 
     #print "\n\nmat_A generation time: ", matA_time
     #f.write("\n\nmat_A generation time: " + str(matA_time))
     #print "mat_B generation time: ", matB_time
     #f.write("\n\nmat_B generation time: " + str(matB_time))
-    print "Total execution time: ", total_time
+    print("Total execution time: ", total_time)
     #f.write("\n\nTotal execution time: " + str(total_time))
     #f.close()
     return energy
@@ -141,21 +141,21 @@ def build_matrix(psis_i, psis_j, bracket_notation):
 
     Multiprocessing version
     """
-    matrix = [[0.0] * NSIZE for i in xrange(NSIZE)]
+    matrix = [[0.0] * NSIZE for i in range(NSIZE)]
 
 
-    for i in xrange(0, NSIZE):
-        print 'Constructing row', i, 'of', bracket_notation
+    for i in range(0, NSIZE):
+        print('Constructing row', i, 'of', bracket_notation)
         pool = mp.Pool(processes = None)
         psirowobj = [pool.apply_async(ws_physics.get_qstate,
                                       args=(psis_i[i],psis_j[j],
                                             ALPHA, BETA, GAMMA))
-                     for j in xrange(i, NSIZE)]
+                     for j in range(i, NSIZE)]
         psirow = [p.get() for p in psirowobj]
         pool.terminate()
 
         # Now populate row and its transpose column since this is a symmetric matrix
-        for j in xrange(0, len(psirow)):
+        for j in range(0, len(psirow)):
             matrix[i][i+j] = psirow[j]
             matrix[i+j][i] = psirow[j]
 
